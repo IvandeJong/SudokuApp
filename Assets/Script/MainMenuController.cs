@@ -5,7 +5,7 @@ using System;
 public class MainMenuController : MonoBehaviour
 {
     public const string SudokuSceneName = "SudokuClassic";
-public const string GameModeKey = "SudokuGameMode";
+    public const string GameModeKey = "SudokuGameMode";
     public const string DailyDateKey = "SudokuDailyDate";
     public const string GridSizeKey = "CurrentGridSize";
     public const string DifficultyKey = "CurrentDifficulty";
@@ -23,28 +23,12 @@ public const string GameModeKey = "SudokuGameMode";
 
     public void OpenCampaign()
     {
-        if (campaignPanel != null)
-        {
-            campaignPanel.Show();
-        }
-        else
-        {
-            PlayerPrefs.SetString(GameModeKey, "Campaign");
-            PlayerPrefs.Save();
-            SceneManager.LoadScene(SudokuSceneName);
-        }
+        campaignPanel.Show();
     }
 
     public void OpenFreePlay()
     {
-        if (freePlayPanel != null)
-        {
-            freePlayPanel.Show();
-        }
-        else
-        {
-            Debug.Log("Free play mode clicked (no panel linked)");
-        }
+        freePlayPanel.Show();
     }
 }
 

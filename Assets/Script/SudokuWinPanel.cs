@@ -2,6 +2,7 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class SudokuWinPanel : MonoBehaviour
 {
@@ -10,9 +11,30 @@ public class SudokuWinPanel : MonoBehaviour
     [SerializeField] private TextMeshProUGUI totalTimeText;
     [SerializeField] private TextMeshProUGUI mistakesText;
     [SerializeField] private GameObject nextLevelButton;
-
+    [SerializeField] private GameObject mainMenuButton;
     [SerializeField] private GameObject starsContainer;
     [SerializeField] private GameObject[] starIcons; // 3 stars
+
+    private Button mainMenuButtonComponent;
+    private Button nextLevelButtonComponent;
+
+    private void Awake()
+    {
+        mainMenuButtonComponent = transform.Find("MenuButton")?.GetComponent<Button>();
+        nextLevelButtonComponent = transform.Find("NextLevelButton")?.GetComponent<Button>();
+
+        if (mainMenuButtonComponent != null)
+        {
+            mainMenuButtonComponent.onClick.RemoveAllListeners();
+            mainMenuButtonComponent.onClick.AddListener(OpenMainMenu);
+        }
+
+        if (nextLevelButtonComponent != null)
+        {
+            nextLevelButtonComponent.onClick.RemoveAllListeners();
+            nextLevelButtonComponent.onClick.AddListener(StartNextCampaignLevel);
+        }
+    }
 
     public void Show(float totalSeconds, int mistakes, bool showNextLevel)
     {
@@ -78,11 +100,6 @@ public class SudokuWinPanel : MonoBehaviour
         panelRoot.SetActive(false);
     }
 
-    public void OpenMainMenu()
-    {
-        SceneManager.LoadScene("MainMenu");
-    }
-
     public void StartNextCampaignLevel()
     {
         int nextIndex = PlayerPrefs.GetInt("CampaignLevelIndex", 0) + 1;
@@ -102,5 +119,10 @@ public class SudokuWinPanel : MonoBehaviour
         else if (nextLevel.gridSize == "Mini") sceneName = "SudokuMini";
 
         SceneManager.LoadScene(sceneName);
+    }
+
+    public void OpenMainMenu()
+    {
+        SceneManager.LoadScene("MainMenu");
     }
 }

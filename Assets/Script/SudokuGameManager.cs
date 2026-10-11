@@ -17,9 +17,9 @@ public class SudokuGameManager : MonoBehaviour
     [SerializeField] private TMPro.TextMeshProUGUI modeTitleText;
 
     [Header("Grid Configuration")]
-    [SerializeField] private int gridSize = 9;
-    [SerializeField] private int subGridWidth = 3;
-    [SerializeField] private int subGridHeight = 3;
+    [SerializeField] private int gridSize ;
+    [SerializeField] private int subGridWidth;
+    [SerializeField] private int subGridHeight;
 
     [Header("Puzzle Settings")]
     [SerializeField] private bool useMenuSettings = true;
@@ -79,24 +79,12 @@ public class SudokuGameManager : MonoBehaviour
     private int[,] solution;
 
     [Header("Helper UI")]
-    [SerializeField] private TMPro.TextMeshProUGUI hintBadgeText;
-    [SerializeField] private GameObject notesOffOverlay;
-    [SerializeField] private Image hintIcon;
-    [SerializeField] private Sprite noHintsIcon;
-    private Sprite availableHintsIcon;
-
-    [Header("Action Buttons")]
-    [SerializeField] private Button undoButton;
-    [SerializeField] private Button eraseButton;
-    [SerializeField] private Image undoIcon;
-    [SerializeField] private Image eraseIcon;
-    [SerializeField] private Color actionButtonColor = Color.white;
-    [SerializeField] private Color inactiveButtonColor = new Color(0.65f, 0.65f, 0.65f, 1f);
+    [SerializeField] private SudokuHelperPanel helperPanel;
 
     public void ToggleNotesMode()
     {
         isNotesMode = !isNotesMode;
-        if (notesOffOverlay != null) notesOffOverlay.SetActive(!isNotesMode);
+        if (helperPanel != null) helperPanel.SetNotesMode(isNotesMode);
         Debug.Log("Notes mode: " + isNotesMode);
     }
 
@@ -161,32 +149,7 @@ public class SudokuGameManager : MonoBehaviour
 
     private void UpdateHintBadge()
     {
-        int remaining = MaxHints - hintCount;
-
-        if (hintBadgeText != null)
-        {
-            hintBadgeText.text = remaining.ToString();
-            hintBadgeText.gameObject.SetActive(remaining > 0);
-
-            // Also deactivate the background image of the badge if it exists
-            Transform badgeBg = hintBadgeText.transform.parent;
-            if (badgeBg != null && badgeBg != transform) // Ensure we don't deactivate the icon or something else
-            {
-                // In my RunCommand, badgeBg is the "Badge" object which has the Image
-                // So I should deactivate that.
-                if (badgeBg.name == "Badge") badgeBg.gameObject.SetActive(remaining > 0);
-            }
-        }
-
-        if (hintIcon != null)
-        {
-            if (availableHintsIcon == null)
-            {
-                availableHintsIcon = hintIcon.sprite;
-            }
-
-            hintIcon.sprite = remaining > 0 ? availableHintsIcon : noHintsIcon;
-        }
+        if (helperPanel != null) helperPanel.UpdateHintBadge(MaxHints - hintCount);
     }
 
     private void RecordUndo(SudokuCell cell, bool isNoteAction = false)
@@ -205,32 +168,8 @@ public class SudokuGameManager : MonoBehaviour
 
     private void UpdateActionButtonStates()
     {
-        if (undoButton != null)
-        {
-            SetButtonColor(undoButton, undoIcon, undoStack.Count > 0);
-        }
-
-        if (eraseButton != null)
-        {
-            bool canErase = selectedCell != null && !selectedCell.isInitial && selectedCell.value != 0;
-            SetButtonColor(eraseButton, eraseIcon, canErase);
-        }
-    }
-
-    private void SetButtonColor(Button button, Image icon, bool isActive)
-    {
-        button.interactable = isActive;
-        Color color = isActive ? actionButtonColor : inactiveButtonColor;
-
-        if (button.targetGraphic != null)
-        {
-            button.targetGraphic.color = color;
-        }
-
-        if (icon != null)
-        {
-            icon.color = color;
-        }
+        bool canErase = selectedCell != null && !selectedCell.isInitial && selectedCell.value != 0;
+        if (helperPanel != null) helperPanel.UpdateActionButtonStates(undoStack.Count > 0, canErase);
     }
 
     public void InputNumber(int number)
@@ -256,6 +195,11 @@ public class SudokuGameManager : MonoBehaviour
                 RecordUndo(selectedCell, true);
                 selectedCell.ToggleNote(number);
                 UpdateActionButtonStates();
+            }
+            else
+            {
+                mistakeCount++;
+                selectedCell.FlashWrongAnswer(wrongAnswerLockDuration);
             }
             return;
         }
@@ -389,6 +333,20 @@ public class SudokuGameManager : MonoBehaviour
         isInputLocked = false;
         elapsedTime = 0f;
         mistakeCount = 0;
+        if (helperPanel == null || !helperPanel.gameObject.scene.IsValid())
+        {
+            helperPanel = FindFirstObjectByType<SudokuHelperPanel>();
+        }
+
+        if (helperPanel == null)
+        {
+            Debug.LogError("No SudokuHelperPanel instance was found in the active scene.", this);
+        }
+
+        if (helperPanel != null)
+        {
+            helperPanel.Bind(this);
+        }
         UpdateActionButtonStates();
 
 
@@ -433,9 +391,6 @@ public class SudokuGameManager : MonoBehaviour
         if (dailyMode)
         {
             difficulty = "Medium";
-            gridSize = 9;
-            subGridWidth = 3;
-            subGridHeight = 3;
         }
         else if (!campaignMode && useMenuSettings && PlayerPrefs.HasKey(MainMenuController.GridSizeKey))
         {
@@ -457,7 +412,7 @@ public class SudokuGameManager : MonoBehaviour
 
         hintCount = 0;
         UpdateHintBadge();
-        if (notesOffOverlay != null) notesOffOverlay.SetActive(true);
+        if (helperPanel != null) helperPanel.SetNotesMode(false);
     }
 
     private void UpdateTitle(string mode, string difficulty)
