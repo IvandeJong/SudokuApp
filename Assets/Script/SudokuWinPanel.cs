@@ -44,4 +44,9 @@ public class SudokuWinPanel : MonoBehaviour
 
         panelRoot.SetActive(false);
     }
+
+    public void OpenMainMenu()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+    }
 }

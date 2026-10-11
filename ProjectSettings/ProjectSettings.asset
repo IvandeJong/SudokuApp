@@ -691,11 +691,11 @@ PlayerSettings:
   activeInputHandler: 1
   windowsGamepadBackendHint: 0
   enableDirectStorage: 0
-  cloudProjectId: ade1080c-3baf-4a12-9bdd-cb5acb22963f
+  cloudProjectId: 1c621185-a982-4f07-8bc4-76b3e03c1812
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: SudokuApp 2026-10-10_19-34-33
-  organizationId: ivansanderdejong-gmail-com
+  projectName: SudokuApp 2026-10-11_08-59-36
+  organizationId: meerit
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}
