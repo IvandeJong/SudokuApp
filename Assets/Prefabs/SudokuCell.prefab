@@ -270,7 +270,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bf683633d0efb074492456a4ff451c5c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SudokuCell
+  m_EditorClassIdentifier: Sudoku.Runtime::SudokuCell
   row: 3
   col: 5
   value: 0

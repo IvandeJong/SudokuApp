@@ -11,6 +11,7 @@ public const string GameModeKey = "SudokuGameMode";
     public const string DifficultyKey = "CurrentDifficulty";
 
     [SerializeField] private FreePlayPanelController freePlayPanel;
+    [SerializeField] private CampaignPanelController campaignPanel;
 
     public void OpenDailySudoku()
     {
@@ -22,9 +23,16 @@ public const string GameModeKey = "SudokuGameMode";
 
     public void OpenCampaign()
     {
-        PlayerPrefs.SetString(GameModeKey, "Campaign");
-        PlayerPrefs.Save();
-        SceneManager.LoadScene(SudokuSceneName);
+        if (campaignPanel != null)
+        {
+            campaignPanel.Show();
+        }
+        else
+        {
+            PlayerPrefs.SetString(GameModeKey, "Campaign");
+            PlayerPrefs.Save();
+            SceneManager.LoadScene(SudokuSceneName);
+        }
     }
 
     public void OpenFreePlay()

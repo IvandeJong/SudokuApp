@@ -1,4 +1,6 @@
 ﻿<Solution>
+  <Project Path="Sudoku.Runtime.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.2D.Welcome.csproj" />
+  <Project Path="SudokuTests.EditMode.csproj" />
 </Solution>

@@ -119,6 +119,110 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &133635372
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 133635373}
+  - component: {fileID: 133635376}
+  - component: {fileID: 133635375}
+  - component: {fileID: 133635374}
+  m_Layer: 5
+  m_Name: Grid_4
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &133635373
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 133635372}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1598776073}
+  - {fileID: 2015310938}
+  - {fileID: 1692955498}
+  - {fileID: 1048020645}
+  m_Father: {fileID: 1031038830}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &133635374
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 133635372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a8695521f0d02e499659fee002a26c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GridLayoutGroup
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 0
+  m_StartCorner: 0
+  m_StartAxis: 0
+  m_CellSize: {x: 130, y: 130}
+  m_Spacing: {x: 5, y: 5}
+  m_Constraint: 0
+  m_ConstraintCount: 2
+--- !u!114 &133635375
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 133635372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &133635376
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 133635372}
+  m_CullTransparentMesh: 1
 --- !u!1 &150410281
 GameObject:
   m_ObjectHideFlags: 0
@@ -340,7 +444,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 215538092}
-        m_TargetAssemblyTypeName: SudokuGameManager, Assembly-CSharp
+        m_TargetAssemblyTypeName: SudokuGameManager, Sudoku.Runtime
         m_MethodName: InputNumber
         m_Mode: 3
         m_Arguments:
@@ -389,6 +493,110 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 151926725}
   m_CullTransparentMesh: 1
+--- !u!1 &214560906
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 214560907}
+  - component: {fileID: 214560910}
+  - component: {fileID: 214560909}
+  - component: {fileID: 214560908}
+  m_Layer: 5
+  m_Name: Grid_3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &214560907
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 214560906}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 921967160}
+  - {fileID: 852980787}
+  - {fileID: 2053099281}
+  - {fileID: 219942319}
+  m_Father: {fileID: 1031038830}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &214560908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 214560906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a8695521f0d02e499659fee002a26c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GridLayoutGroup
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 0
+  m_StartCorner: 0
+  m_StartAxis: 0
+  m_CellSize: {x: 130, y: 130}
+  m_Spacing: {x: 5, y: 5}
+  m_Constraint: 0
+  m_ConstraintCount: 2
+--- !u!114 &214560909
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 214560906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &214560910
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 214560906}
+  m_CullTransparentMesh: 1
 --- !u!1 &215538090
 GameObject:
   m_ObjectHideFlags: 0
@@ -432,7 +640,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3fcf52f6782f1514d95fc75a32872dbe, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SudokuGameManager
+  m_EditorClassIdentifier: Sudoku.Runtime::SudokuGameManager
   wrongAnswerLockDuration: 1.5
   correctAnswerFlashDuration: 1.5
   winPanel: {fileID: 1636456252}
@@ -451,7 +659,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1031038830}
+    m_TransformParent: {fileID: 214560907}
     m_Modifications:
     - target: {fileID: 7039736438164762292, guid: e1b86a9cfb5665942819f22a290df8fe, type: 3}
       propertyPath: m_Pivot.x
@@ -553,7 +761,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1031038830}
+    m_TransformParent: {fileID: 1424042491}
     m_Modifications:
     - target: {fileID: 7039736438164762292, guid: e1b86a9cfb5665942819f22a290df8fe, type: 3}
       propertyPath: m_Pivot.x
@@ -792,7 +1000,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1031038830}
+    m_TransformParent: {fileID: 921893180}
     m_Modifications:
     - target: {fileID: 7039736438164762292, guid: e1b86a9cfb5665942819f22a290df8fe, type: 3}
       propertyPath: m_Pivot.x
@@ -1377,7 +1585,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f5b43173a15fb294c930769a9f68edd4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SudokuBoardInitializer
+  m_EditorClassIdentifier: Sudoku.Runtime::SudokuBoardInitializer
   gridSize: 4
 --- !u!1 &650944080
 GameObject:
@@ -1463,7 +1671,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 215538092}
-        m_TargetAssemblyTypeName: SudokuGameManager, Assembly-CSharp
+        m_TargetAssemblyTypeName: SudokuGameManager, Sudoku.Runtime
         m_MethodName: InputNumber
         m_Mode: 3
         m_Arguments:
@@ -1655,7 +1863,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1031038830}
+    m_TransformParent: {fileID: 921893180}
     m_Modifications:
     - target: {fileID: 7039736438164762292, guid: e1b86a9cfb5665942819f22a290df8fe, type: 3}
       propertyPath: m_Pivot.x
@@ -1757,7 +1965,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1031038830}
+    m_TransformParent: {fileID: 921893180}
     m_Modifications:
     - target: {fileID: 7039736438164762292, guid: e1b86a9cfb5665942819f22a290df8fe, type: 3}
       propertyPath: m_Pivot.x
@@ -2071,7 +2279,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1031038830}
+    m_TransformParent: {fileID: 214560907}
     m_Modifications:
     - target: {fileID: 7039736438164762292, guid: e1b86a9cfb5665942819f22a290df8fe, type: 3}
       propertyPath: m_Pivot.x
@@ -2173,7 +2381,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1031038830}
+    m_TransformParent: {fileID: 1424042491}
     m_Modifications:
     - target: {fileID: 7039736438164762292, guid: e1b86a9cfb5665942819f22a290df8fe, type: 3}
       propertyPath: m_Pivot.x
@@ -2269,13 +2477,117 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7039736438164762292, guid: e1b86a9cfb5665942819f22a290df8fe, type: 3}
   m_PrefabInstance: {fileID: 866069390}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &921893179
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 921893180}
+  - component: {fileID: 921893183}
+  - component: {fileID: 921893182}
+  - component: {fileID: 921893181}
+  m_Layer: 5
+  m_Name: Grid_1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &921893180
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 921893179}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 422763674}
+  - {fileID: 749460034}
+  - {fileID: 752037875}
+  - {fileID: 979414828}
+  m_Father: {fileID: 1031038830}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &921893181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 921893179}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a8695521f0d02e499659fee002a26c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GridLayoutGroup
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 0
+  m_StartCorner: 0
+  m_StartAxis: 0
+  m_CellSize: {x: 130, y: 130}
+  m_Spacing: {x: 5, y: 5}
+  m_Constraint: 0
+  m_ConstraintCount: 2
+--- !u!114 &921893182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 921893179}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &921893183
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 921893179}
+  m_CullTransparentMesh: 1
 --- !u!1001 &921967159
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1031038830}
+    m_TransformParent: {fileID: 214560907}
     m_Modifications:
     - target: {fileID: 7039736438164762292, guid: e1b86a9cfb5665942819f22a290df8fe, type: 3}
       propertyPath: m_Pivot.x
@@ -2377,7 +2689,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1031038830}
+    m_TransformParent: {fileID: 1424042491}
     m_Modifications:
     - target: {fileID: 7039736438164762292, guid: e1b86a9cfb5665942819f22a290df8fe, type: 3}
       propertyPath: m_Pivot.x
@@ -2558,7 +2870,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1031038830}
+    m_TransformParent: {fileID: 921893180}
     m_Modifications:
     - target: {fileID: 7039736438164762292, guid: e1b86a9cfb5665942819f22a290df8fe, type: 3}
       propertyPath: m_Pivot.x
@@ -2685,22 +2997,10 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 422763674}
-  - {fileID: 749460034}
-  - {fileID: 328017645}
-  - {fileID: 1493476634}
-  - {fileID: 752037875}
-  - {fileID: 979414828}
-  - {fileID: 866069391}
-  - {fileID: 927489357}
-  - {fileID: 921967160}
-  - {fileID: 852980787}
-  - {fileID: 1598776073}
-  - {fileID: 2015310938}
-  - {fileID: 2053099281}
-  - {fileID: 219942319}
-  - {fileID: 1692955498}
-  - {fileID: 1048020645}
+  - {fileID: 921893180}
+  - {fileID: 1424042491}
+  - {fileID: 214560907}
+  - {fileID: 133635373}
   m_Father: {fileID: 643083391}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -2766,17 +3066,17 @@ MonoBehaviour:
   m_ChildAlignment: 4
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 130, y: 130}
+  m_CellSize: {x: 270, y: 270}
   m_Spacing: {x: 10, y: 10}
   m_Constraint: 1
-  m_ConstraintCount: 4
+  m_ConstraintCount: 2
 --- !u!1001 &1048020644
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1031038830}
+    m_TransformParent: {fileID: 133635373}
     m_Modifications:
     - target: {fileID: 7039736438164762292, guid: e1b86a9cfb5665942819f22a290df8fe, type: 3}
       propertyPath: m_Pivot.x
@@ -3230,7 +3530,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 215538092}
-        m_TargetAssemblyTypeName: SudokuGameManager, Assembly-CSharp
+        m_TargetAssemblyTypeName: SudokuGameManager, Sudoku.Runtime
         m_MethodName: InputNumber
         m_Mode: 3
         m_Arguments:
@@ -3500,7 +3800,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 215538092}
-        m_TargetAssemblyTypeName: SudokuGameManager, Assembly-CSharp
+        m_TargetAssemblyTypeName: SudokuGameManager, Sudoku.Runtime
         m_MethodName: OpenMainMenu
         m_Mode: 1
         m_Arguments:
@@ -3932,6 +4232,110 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -64}
   m_SizeDelta: {x: 600, y: 100}
   m_Pivot: {x: 0.5, y: 1}
+--- !u!1 &1424042490
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1424042491}
+  - component: {fileID: 1424042494}
+  - component: {fileID: 1424042493}
+  - component: {fileID: 1424042492}
+  m_Layer: 5
+  m_Name: Grid_2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1424042491
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1424042490}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 328017645}
+  - {fileID: 1493476634}
+  - {fileID: 866069391}
+  - {fileID: 927489357}
+  m_Father: {fileID: 1031038830}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1424042492
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1424042490}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a8695521f0d02e499659fee002a26c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GridLayoutGroup
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 0
+  m_StartCorner: 0
+  m_StartAxis: 0
+  m_CellSize: {x: 130, y: 130}
+  m_Spacing: {x: 5, y: 5}
+  m_Constraint: 0
+  m_ConstraintCount: 2
+--- !u!114 &1424042493
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1424042490}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1424042494
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1424042490}
+  m_CullTransparentMesh: 1
 --- !u!1 &1466180635
 GameObject:
   m_ObjectHideFlags: 0
@@ -4016,7 +4420,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 215538092}
-        m_TargetAssemblyTypeName: SudokuGameManager, Assembly-CSharp
+        m_TargetAssemblyTypeName: SudokuGameManager, Sudoku.Runtime
         m_MethodName: InputNumber
         m_Mode: 3
         m_Arguments:
@@ -4071,7 +4475,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1031038830}
+    m_TransformParent: {fileID: 1424042491}
     m_Modifications:
     - target: {fileID: 7039736438164762292, guid: e1b86a9cfb5665942819f22a290df8fe, type: 3}
       propertyPath: m_Pivot.x
@@ -4447,7 +4851,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1031038830}
+    m_TransformParent: {fileID: 133635373}
     m_Modifications:
     - target: {fileID: 7039736438164762292, guid: e1b86a9cfb5665942819f22a290df8fe, type: 3}
       propertyPath: m_Pivot.x
@@ -4768,18 +5172,20 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bb45266053f9625438d4c3df8886629a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SudokuWinPanel
+  m_EditorClassIdentifier: Sudoku.Runtime::SudokuWinPanel
   panelRoot: {fileID: 0}
   titleText: {fileID: 1271628315}
   totalTimeText: {fileID: 400598977}
   mistakesText: {fileID: 1805856823}
+  starsContainer: {fileID: 0}
+  starIcons: []
 --- !u!1001 &1692955497
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1031038830}
+    m_TransformParent: {fileID: 133635373}
     m_Modifications:
     - target: {fileID: 7039736438164762292, guid: e1b86a9cfb5665942819f22a290df8fe, type: 3}
       propertyPath: m_Pivot.x
@@ -4959,7 +5365,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 215538092}
-        m_TargetAssemblyTypeName: SudokuGameManager, Assembly-CSharp
+        m_TargetAssemblyTypeName: SudokuGameManager, Sudoku.Runtime
         m_MethodName: InputNumber
         m_Mode: 3
         m_Arguments:
@@ -5229,7 +5635,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 215538092}
-        m_TargetAssemblyTypeName: SudokuGameManager, Assembly-CSharp
+        m_TargetAssemblyTypeName: SudokuGameManager, Sudoku.Runtime
         m_MethodName: InputNumber
         m_Mode: 3
         m_Arguments:
@@ -5606,7 +6012,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 215538092}
-        m_TargetAssemblyTypeName: SudokuGameManager, Assembly-CSharp
+        m_TargetAssemblyTypeName: SudokuGameManager, Sudoku.Runtime
         m_MethodName: InputNumber
         m_Mode: 3
         m_Arguments:
@@ -5814,7 +6220,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 215538092}
-        m_TargetAssemblyTypeName: SudokuGameManager, Assembly-CSharp
+        m_TargetAssemblyTypeName: SudokuGameManager, Sudoku.Runtime
         m_MethodName: InputNumber
         m_Mode: 3
         m_Arguments:
@@ -5869,7 +6275,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1031038830}
+    m_TransformParent: {fileID: 133635373}
     m_Modifications:
     - target: {fileID: 7039736438164762292, guid: e1b86a9cfb5665942819f22a290df8fe, type: 3}
       propertyPath: m_Pivot.x
@@ -5971,7 +6377,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1031038830}
+    m_TransformParent: {fileID: 214560907}
     m_Modifications:
     - target: {fileID: 7039736438164762292, guid: e1b86a9cfb5665942819f22a290df8fe, type: 3}
       propertyPath: m_Pivot.x
@@ -6151,7 +6557,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 215538092}
-        m_TargetAssemblyTypeName: SudokuGameManager, Assembly-CSharp
+        m_TargetAssemblyTypeName: SudokuGameManager, Sudoku.Runtime
         m_MethodName: InputNumber
         m_Mode: 3
         m_Arguments:

@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 using System.Collections;
 using System;
 using System.Globalization;
+using System.Linq;
 
 public class SudokuGameManager : MonoBehaviour
 {
@@ -199,12 +200,30 @@ public class SudokuGameManager : MonoBehaviour
         string difficulty = configuredDifficulty;
         string dailyDate = GetConfiguredDailyDate();
 
+        bool campaignMode = false;
+        int campaignIndex = -1;
+        
         if (useMenuSettings && PlayerPrefs.HasKey(MainMenuController.GameModeKey))
         {
             string mode = PlayerPrefs.GetString(MainMenuController.GameModeKey);
             dailyMode = mode == "Daily";
+            campaignMode = mode == "Campaign";
             difficulty = PlayerPrefs.GetString(MainMenuController.DifficultyKey, configuredDifficulty);
             dailyDate = PlayerPrefs.GetString(MainMenuController.DailyDateKey, dailyDate);
+            
+            if (campaignMode)
+            {
+                campaignIndex = PlayerPrefs.GetInt("CampaignLevelIndex", 0);
+                var level = CampaignManager.Instance.GetLevel(campaignIndex);
+                if (level != null)
+                {
+                    difficulty = level.difficulty;
+                    string sizeStr = level.gridSize;
+                    if (sizeStr == "Nano") { gridSize = 4; subGridWidth = 2; subGridHeight = 2; }
+                    else if (sizeStr == "Mini") { gridSize = 6; subGridWidth = 3; subGridHeight = 2; }
+                    else { gridSize = 9; subGridWidth = 3; subGridHeight = 3; }
+                }
+            }
             
             UpdateTitle(mode, difficulty);
         }
@@ -220,7 +239,7 @@ public class SudokuGameManager : MonoBehaviour
             subGridWidth = 3;
             subGridHeight = 3;
         }
-        else if (useMenuSettings && PlayerPrefs.HasKey(MainMenuController.GridSizeKey))
+        else if (!campaignMode && useMenuSettings && PlayerPrefs.HasKey(MainMenuController.GridSizeKey))
         {
             string sizeStr = PlayerPrefs.GetString(MainMenuController.GridSizeKey);
             if (sizeStr == "Nano") { gridSize = 4; subGridWidth = 2; subGridHeight = 2; }
@@ -232,9 +251,9 @@ public class SudokuGameManager : MonoBehaviour
 
         string seedText = dailyMode
             ? $"Daily:{dailyDate}"
-            : $"FreePlay:{DateTime.Now.Ticks}";
+            : (campaignMode ? $"Campaign:{campaignIndex}" : $"FreePlay:{DateTime.Now.Ticks}");
         int seed = SudokuPuzzleGenerator.CreateSeed(seedText);
-        int[,] puzzle = SudokuPuzzleGenerator.Generate(seed, difficulty, gridSize, subGridWidth, subGridHeight);
+int[,] puzzle = SudokuPuzzleGenerator.Generate(seed, difficulty, gridSize, subGridWidth, subGridHeight);
 
         LoadPuzzle(puzzle);
     }
@@ -272,7 +291,43 @@ public class SudokuGameManager : MonoBehaviour
 
     private void LoadPuzzle(int[,] puzzle)
     {
-        SudokuCell[] cells = FindObjectsByType<SudokuCell>(FindObjectsSortMode.None);
+        SudokuCell[] cells = FindObjectsByType<SudokuCell>(FindObjectsInactive.Include)
+            .OrderByDescending(cell => cell.transform.position.y)
+            .ThenBy(cell => cell.transform.position.x)
+            .ToArray();
+
+        if (cells.Length != gridSize * gridSize)
+        {
+            Debug.LogWarning($"Verwacht {gridSize * gridSize} SudokuCell-objecten, maar vond {cells.Length}.");
+        }
+
+        SudokuCell[,] cellsByCoordinate = new SudokuCell[gridSize, gridSize];
+        bool hasAllNamedCoordinates = true;
+
+        foreach (SudokuCell cell in cells)
+        {
+            if (TryGetCellCoordinates(cell.gameObject.name, out int namedRow, out int namedCol) &&
+                cellsByCoordinate[namedRow, namedCol] == null)
+            {
+                cellsByCoordinate[namedRow, namedCol] = cell;
+            }
+        }
+
+        for (int r = 0; r < gridSize; r++)
+        {
+            for (int c = 0; c < gridSize; c++)
+            {
+                if (cellsByCoordinate[r, c] == null)
+                {
+                    hasAllNamedCoordinates = false;
+                }
+            }
+        }
+
+        if (!hasAllNamedCoordinates)
+        {
+            cellsByCoordinate = CreateVisualCellMapping(cells);
+        }
 
         for (int r = 0; r < gridSize; r++)
         {
@@ -281,16 +336,47 @@ public class SudokuGameManager : MonoBehaviour
                 int val = puzzle[r, c];
                 board[r, c] = val;
 
-                foreach (var cell in cells)
+                SudokuCell cell = cellsByCoordinate[r, c];
+                if (cell != null)
                 {
-                    if (cell.row == r && cell.col == c)
-                    {
-                        cell.SetValue(val, val != 0);
-                        break;
-                    }
+                    cell.row = r;
+                    cell.col = c;
+                    cell.SetValue(val, val != 0);
                 }
             }
         }
+    }
+
+    private SudokuCell[,] CreateVisualCellMapping(SudokuCell[] cells)
+    {
+        SudokuCell[,] mapping = new SudokuCell[gridSize, gridSize];
+        for (int index = 0; index < cells.Length && index < gridSize * gridSize; index++)
+        {
+            int row = index / gridSize;
+            int col = index % gridSize;
+            mapping[row, col] = cells[index];
+        }
+
+        return mapping;
+    }
+
+    private bool TryGetCellCoordinates(string cellName, out int row, out int col)
+    {
+        row = -1;
+        col = -1;
+
+        string[] parts = cellName.Split('_');
+        if (parts.Length != 3 || parts[0] != "Cell")
+        {
+            return false;
+        }
+
+        if (!int.TryParse(parts[1], out row) || !int.TryParse(parts[2], out col))
+        {
+            return false;
+        }
+
+        return row >= 0 && row < gridSize && col >= 0 && col < gridSize;
     }
 
     private const string MainMenuScene = "MainMenu";

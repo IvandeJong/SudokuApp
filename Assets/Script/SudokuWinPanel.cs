@@ -9,6 +9,9 @@ public class SudokuWinPanel : MonoBehaviour
     [SerializeField] private TextMeshProUGUI totalTimeText;
     [SerializeField] private TextMeshProUGUI mistakesText;
 
+    [SerializeField] private GameObject starsContainer;
+    [SerializeField] private GameObject[] starIcons; // 3 stars
+
     public void Show(float totalSeconds, int mistakes)
     {
         if (panelRoot == null)
@@ -16,9 +19,12 @@ public class SudokuWinPanel : MonoBehaviour
             panelRoot = gameObject;
         }
 
+        string mode = PlayerPrefs.GetString("SudokuGameMode", "");
+        bool isCampaign = mode == "Campaign";
+
         if (titleText != null)
         {
-            titleText.text = "Sudoku opgelost!";
+            titleText.text = isCampaign ? "Level Voltooid!" : "Sudoku opgelost!";
         }
 
         TimeSpan time = TimeSpan.FromSeconds(totalSeconds);
@@ -30,6 +36,26 @@ public class SudokuWinPanel : MonoBehaviour
         if (mistakesText != null)
         {
             mistakesText.text = $"Aantal fouten: {mistakes}";
+        }
+
+        if (isCampaign)
+        {
+            int levelIndex = PlayerPrefs.GetInt("CampaignLevelIndex", 0);
+            CampaignManager.Instance.SaveLevelResult(levelIndex, totalSeconds, mistakes);
+            
+            var progress = CampaignManager.Instance.GetProgress(levelIndex);
+            if (progress != null && starsContainer != null)
+            {
+                starsContainer.SetActive(true);
+                for (int i = 0; i < starIcons.Length; i++)
+                {
+                    starIcons[i].SetActive(i < progress.stars);
+                }
+            }
+        }
+        else
+        {
+            if (starsContainer != null) starsContainer.SetActive(false);
         }
 
         panelRoot.SetActive(true);
