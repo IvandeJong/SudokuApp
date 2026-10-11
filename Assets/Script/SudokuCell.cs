@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using System.Collections.Generic;
 
 public class SudokuCell : MonoBehaviour
 {
@@ -35,6 +36,10 @@ public class SudokuCell : MonoBehaviour
     }
 
     [SerializeField] private TextMeshProUGUI numberText; // Of Text als het geen TMP is
+    [SerializeField] private GameObject notesContainer;
+    [SerializeField] private TextMeshProUGUI[] noteTexts; // 9 texts for classic 9x9
+    private List<int> currentNotes = new List<int>();
+
     public void SetValue(int newValue, bool initial = false)
     {
         value = newValue;
@@ -48,8 +53,68 @@ public class SudokuCell : MonoBehaviour
         if (cellText != null)
         {
             cellText.text = value == 0 ? "" : value.ToString();
-            // cellText vaste startgetallen optioneel een andere kleur, bijv. vetgedrukt of grijs
             cellText.color = initial ? Color.black : Color.blue;
+            cellText.gameObject.SetActive(value != 0);
+        }
+
+        if (notesContainer != null)
+        {
+            notesContainer.SetActive(value == 0 && currentNotes.Count > 0);
+        }
+    }
+
+    public void AddNote(int number)
+    {
+        if (!currentNotes.Contains(number))
+        {
+            currentNotes.Add(number);
+            UpdateNotesDisplay();
+        }
+    }
+
+    public void RemoveNote(int number)
+    {
+        if (currentNotes.Contains(number))
+        {
+            currentNotes.Remove(number);
+            UpdateNotesDisplay();
+        }
+    }
+
+    public void ToggleNote(int number)
+    {
+        if (currentNotes.Contains(number)) currentNotes.Remove(number);
+        else currentNotes.Add(number);
+        UpdateNotesDisplay();
+    }
+
+    public void ClearNotes()
+    {
+        currentNotes.Clear();
+        UpdateNotesDisplay();
+    }
+
+    public List<int> GetNotes() => new List<int>(currentNotes);
+
+    public void SetNotes(List<int> notes)
+    {
+        currentNotes = new List<int>(notes);
+        UpdateNotesDisplay();
+    }
+
+    private void UpdateNotesDisplay()
+    {
+        if (notesContainer == null) return;
+        
+        notesContainer.SetActive(value == 0 && currentNotes.Count > 0);
+        
+        for (int i = 0; i < noteTexts.Length; i++)
+        {
+            int noteValue = i + 1;
+            if (noteTexts[i] != null)
+            {
+                noteTexts[i].text = currentNotes.Contains(noteValue) ? noteValue.ToString() : "";
+            }
         }
     }
 

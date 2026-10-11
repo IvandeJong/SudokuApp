@@ -2,9 +2,11 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
 using System.Collections;
+using System.Collections.Generic;
 using System;
 using System.Globalization;
 using System.Linq;
+using UnityEngine.UI;
 
 public class SudokuGameManager : MonoBehaviour
 {
@@ -35,6 +37,16 @@ public class SudokuGameManager : MonoBehaviour
 
     public void SelectCell(SudokuCell cell)
     {
+        if (cell == null || !TryGetCellCoordinates(cell.gameObject.name, out int row, out int col) ||
+            board == null || row < 0 || row >= board.GetLength(0) || col < 0 || col >= board.GetLength(1))
+        {
+            Debug.LogError($"Ongeldige SudokuCell-coördinaten: {cell?.name}. Bord: {gridSize}x{gridSize}");
+            return;
+        }
+
+        cell.row = row;
+        cell.col = col;
+
         if (selectedCell != null)
         {
             selectedCell.SetSelected(false);
@@ -46,7 +58,179 @@ public class SudokuGameManager : MonoBehaviour
             selectedCell.SetSelected(true);
         }
 
+        UpdateActionButtonStates();
         Debug.Log($"Geselecteerde cel: Rij {cell.row}, Kolom {cell.col}");
+    }
+
+    private struct UndoAction
+    {
+        public SudokuCell cell;
+        public int oldValue;
+        public int newValue;
+        public List<int> oldNotes;
+        public List<int> newNotes;
+        public bool isNoteAction;
+    }
+
+    private Stack<UndoAction> undoStack = new Stack<UndoAction>();
+    private bool isNotesMode = false;
+    private int hintCount = 0;
+    private const int MaxHints = 5;
+    private int[,] solution;
+
+    [Header("Helper UI")]
+    [SerializeField] private TMPro.TextMeshProUGUI hintBadgeText;
+    [SerializeField] private GameObject notesOffOverlay;
+    [SerializeField] private Image hintIcon;
+    [SerializeField] private Sprite noHintsIcon;
+    private Sprite availableHintsIcon;
+
+    [Header("Action Buttons")]
+    [SerializeField] private Button undoButton;
+    [SerializeField] private Button eraseButton;
+    [SerializeField] private Image undoIcon;
+    [SerializeField] private Image eraseIcon;
+    [SerializeField] private Color actionButtonColor = Color.white;
+    [SerializeField] private Color inactiveButtonColor = new Color(0.65f, 0.65f, 0.65f, 1f);
+
+    public void ToggleNotesMode()
+    {
+        isNotesMode = !isNotesMode;
+        if (notesOffOverlay != null) notesOffOverlay.SetActive(!isNotesMode);
+        Debug.Log("Notes mode: " + isNotesMode);
+    }
+
+    public void Undo()
+    {
+        if (undoStack.Count == 0) return;
+
+        UndoAction action = undoStack.Pop();
+        if (action.isNoteAction)
+        {
+            action.cell.SetNotes(action.oldNotes);
+        }
+        else
+        {
+            board[action.cell.row, action.cell.col] = action.oldValue;
+            action.cell.SetNotes(action.oldNotes);
+            action.cell.SetValue(action.oldValue);
+        }
+
+        UpdateActionButtonStates();
+    }
+
+    public void Erase()
+    {
+        if (selectedCell == null || selectedCell.isInitial) return;
+
+        RecordUndo(selectedCell);
+        board[selectedCell.row, selectedCell.col] = 0;
+        selectedCell.ClearNotes();
+        selectedCell.SetValue(0);
+        UpdateActionButtonStates();
+    }
+
+    public void Hint()
+    {
+        if (isGameFinished || hintCount >= MaxHints || solution == null) return;
+
+        SudokuCell[] emptyCells = FindObjectsByType<SudokuCell>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+            .Where(cell => !cell.isInitial && cell.value == 0)
+            .ToArray();
+        if (emptyCells.Length == 0) return;
+
+        SudokuCell hintCell = emptyCells[UnityEngine.Random.Range(0, emptyCells.Length)];
+        int correctValue = solution[hintCell.row, hintCell.col];
+        RecordUndo(hintCell);
+
+        board[hintCell.row, hintCell.col] = correctValue;
+        hintCell.ClearNotes();
+        hintCell.SetValue(correctValue, true);
+        hintCell.FlashCorrectAnswer(correctAnswerFlashDuration);
+        UpdateActionButtonStates();
+
+        hintCount++;
+        UpdateHintBadge();
+        elapsedTime += 60f; // Add 1 minute penalty
+
+        if (CheckWinCondition())
+        {
+            HandlePuzzleSolved();
+        }
+    }
+
+    private void UpdateHintBadge()
+    {
+        int remaining = MaxHints - hintCount;
+
+        if (hintBadgeText != null)
+        {
+            hintBadgeText.text = remaining.ToString();
+            hintBadgeText.gameObject.SetActive(remaining > 0);
+
+            // Also deactivate the background image of the badge if it exists
+            Transform badgeBg = hintBadgeText.transform.parent;
+            if (badgeBg != null && badgeBg != transform) // Ensure we don't deactivate the icon or something else
+            {
+                // In my RunCommand, badgeBg is the "Badge" object which has the Image
+                // So I should deactivate that.
+                if (badgeBg.name == "Badge") badgeBg.gameObject.SetActive(remaining > 0);
+            }
+        }
+
+        if (hintIcon != null)
+        {
+            if (availableHintsIcon == null)
+            {
+                availableHintsIcon = hintIcon.sprite;
+            }
+
+            hintIcon.sprite = remaining > 0 ? availableHintsIcon : noHintsIcon;
+        }
+    }
+
+    private void RecordUndo(SudokuCell cell, bool isNoteAction = false)
+    {
+        undoStack.Push(new UndoAction
+        {
+            cell = cell,
+            oldValue = board[cell.row, cell.col],
+            newValue = board[cell.row, cell.col],
+            oldNotes = cell.GetNotes(),
+            newNotes = cell.GetNotes(),
+            isNoteAction = isNoteAction
+        });
+        UpdateActionButtonStates();
+    }
+
+    private void UpdateActionButtonStates()
+    {
+        if (undoButton != null)
+        {
+            SetButtonColor(undoButton, undoIcon, undoStack.Count > 0);
+        }
+
+        if (eraseButton != null)
+        {
+            bool canErase = selectedCell != null && !selectedCell.isInitial && selectedCell.value != 0;
+            SetButtonColor(eraseButton, eraseIcon, canErase);
+        }
+    }
+
+    private void SetButtonColor(Button button, Image icon, bool isActive)
+    {
+        button.interactable = isActive;
+        Color color = isActive ? actionButtonColor : inactiveButtonColor;
+
+        if (button.targetGraphic != null)
+        {
+            button.targetGraphic.color = color;
+        }
+
+        if (icon != null)
+        {
+            icon.color = color;
+        }
     }
 
     public void InputNumber(int number)
@@ -61,18 +245,31 @@ public class SudokuGameManager : MonoBehaviour
 
         if (number == 0)
         {
-            board[row, col] = 0;
-            selectedCell.SetValue(0);
+            Erase();
+            return;
+        }
+
+        if (isNotesMode)
+        {
+            if (IsValidMove(row, col, number))
+            {
+                RecordUndo(selectedCell, true);
+                selectedCell.ToggleNote(number);
+                UpdateActionButtonStates();
+            }
             return;
         }
 
         if (IsValidMove(row, col, number))
         {
+            RecordUndo(selectedCell);
             board[row, col] = number;
+            selectedCell.ClearNotes();
             selectedCell.SetValue(number);
             selectedCell.SetSelected(false);
             selectedCell.FlashCorrectAnswer(correctAnswerFlashDuration);
             selectedCell = null;
+            UpdateActionButtonStates();
         }
         else
         {
@@ -80,7 +277,7 @@ public class SudokuGameManager : MonoBehaviour
             selectedCell.FlashWrongAnswer(wrongAnswerLockDuration);
             StartCoroutine(LockInputTemporarily());
         }
-        
+
         if (CheckWinCondition())
         {
             HandlePuzzleSolved();
@@ -143,16 +340,23 @@ public class SudokuGameManager : MonoBehaviour
             selectedCell = null;
         }
 
-        if (winPanel != null)
-        {
-            winPanel.Show(elapsedTime, mistakeCount);
-        }
+        bool showNextLevel = PlayerPrefs.GetString(MainMenuController.GameModeKey, "") == "Campaign" &&
+                             CampaignManager.Instance.GetNextLevel(PlayerPrefs.GetInt("CampaignLevelIndex", 0)) != null;
+        Debug.Log($"WinPanel openen: {winPanel.name}, next level: {showNextLevel}");
+        winPanel.Show(elapsedTime, mistakeCount, showNextLevel);
+
 
         Debug.Log("Sudoku opgelost!");
     }
 
     private bool IsValidMove(int row, int col, int number)
     {
+        if (board == null || row < 0 || row >= gridSize || col < 0 || col >= gridSize)
+        {
+            Debug.LogError($"Ongeldige zetpositie: rij {row}, kolom {col}, bord {gridSize}x{gridSize}.");
+            return false;
+        }
+
         for (int i = 0; i < gridSize; i++)
         {
             if (board[row, i] == number) return false;
@@ -185,16 +389,10 @@ public class SudokuGameManager : MonoBehaviour
         isInputLocked = false;
         elapsedTime = 0f;
         mistakeCount = 0;
+        UpdateActionButtonStates();
 
-        if (winPanel == null)
-        {
-            winPanel = FindFirstObjectByType<SudokuWinPanel>(FindObjectsInactive.Include);
-        }
 
-        if (winPanel != null)
-        {
-            winPanel.Hide();
-        }
+        winPanel.Hide();
 
         bool dailyMode = dailyModeInScene;
         string difficulty = configuredDifficulty;
@@ -202,7 +400,7 @@ public class SudokuGameManager : MonoBehaviour
 
         bool campaignMode = false;
         int campaignIndex = -1;
-        
+
         if (useMenuSettings && PlayerPrefs.HasKey(MainMenuController.GameModeKey))
         {
             string mode = PlayerPrefs.GetString(MainMenuController.GameModeKey);
@@ -210,7 +408,7 @@ public class SudokuGameManager : MonoBehaviour
             campaignMode = mode == "Campaign";
             difficulty = PlayerPrefs.GetString(MainMenuController.DifficultyKey, configuredDifficulty);
             dailyDate = PlayerPrefs.GetString(MainMenuController.DailyDateKey, dailyDate);
-            
+
             if (campaignMode)
             {
                 campaignIndex = PlayerPrefs.GetInt("CampaignLevelIndex", 0);
@@ -224,7 +422,7 @@ public class SudokuGameManager : MonoBehaviour
                     else { gridSize = 9; subGridWidth = 3; subGridHeight = 3; }
                 }
             }
-            
+
             UpdateTitle(mode, difficulty);
         }
         else
@@ -253,9 +451,13 @@ public class SudokuGameManager : MonoBehaviour
             ? $"Daily:{dailyDate}"
             : (campaignMode ? $"Campaign:{campaignIndex}" : $"FreePlay:{DateTime.Now.Ticks}");
         int seed = SudokuPuzzleGenerator.CreateSeed(seedText);
-int[,] puzzle = SudokuPuzzleGenerator.Generate(seed, difficulty, gridSize, subGridWidth, subGridHeight);
+        int[,] puzzle = SudokuPuzzleGenerator.GenerateWithSolution(seed, difficulty, out solution, gridSize, subGridWidth, subGridHeight);
 
         LoadPuzzle(puzzle);
+
+        hintCount = 0;
+        UpdateHintBadge();
+        if (notesOffOverlay != null) notesOffOverlay.SetActive(true);
     }
 
     private void UpdateTitle(string mode, string difficulty)
@@ -307,6 +509,7 @@ int[,] puzzle = SudokuPuzzleGenerator.Generate(seed, difficulty, gridSize, subGr
         foreach (SudokuCell cell in cells)
         {
             if (TryGetCellCoordinates(cell.gameObject.name, out int namedRow, out int namedCol) &&
+                namedRow < gridSize && namedCol < gridSize &&
                 cellsByCoordinate[namedRow, namedCol] == null)
             {
                 cellsByCoordinate[namedRow, namedCol] = cell;
@@ -376,7 +579,7 @@ int[,] puzzle = SudokuPuzzleGenerator.Generate(seed, difficulty, gridSize, subGr
             return false;
         }
 
-        return row >= 0 && row < gridSize && col >= 0 && col < gridSize;
+        return row >= 0 && col >= 0;
     }
 
     private const string MainMenuScene = "MainMenu";

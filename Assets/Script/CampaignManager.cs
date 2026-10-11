@@ -81,6 +81,11 @@ public class CampaignManager : MonoBehaviour
         return null;
     }
 
+    public CampaignLevel GetNextLevel(int index)
+    {
+        return GetLevel(index + 1);
+    }
+
     public void SaveLevelResult(int index, float time, int mistakes)
     {
         EnsureInitialized();

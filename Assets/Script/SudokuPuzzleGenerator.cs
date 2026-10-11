@@ -5,8 +5,14 @@ public static class SudokuPuzzleGenerator
 {
     public static int[,] Generate(int seed, string difficulty, int gridSize = 9, int subGridWidth = 3, int subGridHeight = 3)
     {
+        int[,] solution;
+        return GenerateWithSolution(seed, difficulty, out solution, gridSize, subGridWidth, subGridHeight);
+    }
+
+    public static int[,] GenerateWithSolution(int seed, string difficulty, out int[,] solution, int gridSize = 9, int subGridWidth = 3, int subGridHeight = 3)
+    {
         Random random = new Random(seed);
-        int[,] solution = new int[gridSize, gridSize];
+        solution = new int[gridSize, gridSize];
         FillSolution(solution, random, gridSize, subGridWidth, subGridHeight);
 
         int clues = GetClueCount(difficulty, gridSize);
@@ -32,14 +38,14 @@ public static class SudokuPuzzleGenerator
 
     private static int GetClueCount(string difficulty, int gridSize)
     {
-        float ratio = 0.4f; // Default Medium
+        float ratio = 0.5f; // Default Medium
         switch (difficulty)
         {
             case "Easy":
-                ratio = 0.5f;
+                ratio = 0.6f;
                 break;
             case "Hard":
-                ratio = 0.3f;
+                ratio = 0.4f;
                 break;
         }
         return (int)(gridSize * gridSize * ratio);
@@ -93,6 +99,12 @@ public static class SudokuPuzzleGenerator
 
             int row = position / gridSize;
             int col = position % gridSize;
+
+            if (!CanRemoveClue(puzzle, row, col, gridSize, subGridWidth, subGridHeight))
+            {
+                continue;
+            }
+
             int originalValue = puzzle[row, col];
             puzzle[row, col] = 0;
 
@@ -106,6 +118,59 @@ public static class SudokuPuzzleGenerator
                 puzzle[row, col] = originalValue;
             }
         }
+    }
+
+    private static bool CanRemoveClue(int[,] puzzle, int row, int col, int gridSize, int subGridWidth, int subGridHeight)
+    {
+        if (CountRowClues(puzzle, row, gridSize) <= 1 ||
+            CountColumnClues(puzzle, col, gridSize) <= 1)
+        {
+            return false;
+        }
+
+        int startRow = (row / subGridHeight) * subGridHeight;
+        int startCol = (col / subGridWidth) * subGridWidth;
+        int blockClues = 0;
+        for (int currentRow = startRow; currentRow < startRow + subGridHeight; currentRow++)
+        {
+            for (int currentCol = startCol; currentCol < startCol + subGridWidth; currentCol++)
+            {
+                if (puzzle[currentRow, currentCol] != 0)
+                {
+                    blockClues++;
+                }
+            }
+        }
+
+        return blockClues > 1;
+    }
+
+    private static int CountRowClues(int[,] puzzle, int row, int gridSize)
+    {
+        int count = 0;
+        for (int col = 0; col < gridSize; col++)
+        {
+            if (puzzle[row, col] != 0)
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private static int CountColumnClues(int[,] puzzle, int col, int gridSize)
+    {
+        int count = 0;
+        for (int row = 0; row < gridSize; row++)
+        {
+            if (puzzle[row, col] != 0)
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     private static int CountSolutions(int[,] board, int limit, int gridSize, int subGridWidth, int subGridHeight)
