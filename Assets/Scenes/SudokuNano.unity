@@ -1584,17 +1584,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 650944080}
   m_CullTransparentMesh: 1
---- !u!114 &675606515 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5668131893090669644, guid: 1ee0d3ba9ec577540bcd343778994b80, type: 3}
-  m_PrefabInstance: {fileID: 1348079945}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1 &728267277
 GameObject:
   m_ObjectHideFlags: 0
@@ -2018,7 +2007,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 215538092}
         m_TargetAssemblyTypeName: SudokuGameManager, Sudoku.Runtime
         m_MethodName: OpenMainMenu
         m_Mode: 1
@@ -4176,17 +4165,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1424042490}
   m_CullTransparentMesh: 1
---- !u!114 &1425090985 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1085253743884703247, guid: 1ee0d3ba9ec577540bcd343778994b80, type: 3}
-  m_PrefabInstance: {fileID: 1348079945}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1 &1466180635
 GameObject:
   m_ObjectHideFlags: 0

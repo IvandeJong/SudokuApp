@@ -20,8 +20,8 @@ public class SudokuWinPanel : MonoBehaviour
 
     private void Awake()
     {
-        mainMenuButtonComponent = transform.Find("MenuButton")?.GetComponent<Button>();
-        nextLevelButtonComponent = transform.Find("NextLevelButton")?.GetComponent<Button>();
+        mainMenuButtonComponent = FindButton("MenuButton");
+        nextLevelButtonComponent = FindButton("NextLevelButton");
 
         if (mainMenuButtonComponent != null)
         {
@@ -34,6 +34,20 @@ public class SudokuWinPanel : MonoBehaviour
             nextLevelButtonComponent.onClick.RemoveAllListeners();
             nextLevelButtonComponent.onClick.AddListener(StartNextCampaignLevel);
         }
+    }
+
+    private Button FindButton(string buttonName)
+    {
+        Button[] buttons = GetComponentsInChildren<Button>(true);
+        foreach (Button button in buttons)
+        {
+            if (button.gameObject.name == buttonName)
+            {
+                return button;
+            }
+        }
+
+        return null;
     }
 
     public void Show(float totalSeconds, int mistakes, bool showNextLevel)

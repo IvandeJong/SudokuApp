@@ -129,7 +129,6 @@ public class SudokuGameManager : MonoBehaviour
 
         SudokuCell hintCell = emptyCells[UnityEngine.Random.Range(0, emptyCells.Length)];
         int correctValue = solution[hintCell.row, hintCell.col];
-        RecordUndo(hintCell);
 
         board[hintCell.row, hintCell.col] = correctValue;
         hintCell.ClearNotes();
@@ -193,7 +192,12 @@ public class SudokuGameManager : MonoBehaviour
             if (IsValidMove(row, col, number))
             {
                 RecordUndo(selectedCell, true);
-                selectedCell.ToggleNote(number);
+                bool noteAdded = selectedCell.ToggleNote(number);
+                if (noteAdded)
+                {
+                    selectedCell.SetSelected(false);
+                    selectedCell = null;
+                }
                 UpdateActionButtonStates();
             }
             else

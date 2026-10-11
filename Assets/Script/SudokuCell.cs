@@ -38,6 +38,7 @@ public class SudokuCell : MonoBehaviour
     [SerializeField] private TextMeshProUGUI numberText; // Of Text als het geen TMP is
     [SerializeField] private GameObject notesContainer;
     [SerializeField] private TextMeshProUGUI[] noteTexts; // 9 texts for classic 9x9
+    private const int MaxNotes = 4;
     private List<int> currentNotes = new List<int>();
 
     public void SetValue(int newValue, bool initial = false)
@@ -65,7 +66,7 @@ public class SudokuCell : MonoBehaviour
 
     public void AddNote(int number)
     {
-        if (!currentNotes.Contains(number))
+        if (!currentNotes.Contains(number) && currentNotes.Count < MaxNotes)
         {
             currentNotes.Add(number);
             UpdateNotesDisplay();
@@ -81,11 +82,23 @@ public class SudokuCell : MonoBehaviour
         }
     }
 
-    public void ToggleNote(int number)
+    public bool ToggleNote(int number)
     {
-        if (currentNotes.Contains(number)) currentNotes.Remove(number);
-        else currentNotes.Add(number);
+        if (currentNotes.Contains(number))
+        {
+            currentNotes.Remove(number);
+            UpdateNotesDisplay();
+            return false;
+        }
+
+        if (currentNotes.Count >= MaxNotes)
+        {
+            return false;
+        }
+
+        currentNotes.Add(number);
         UpdateNotesDisplay();
+        return true;
     }
 
     public void ClearNotes()
@@ -99,6 +112,10 @@ public class SudokuCell : MonoBehaviour
     public void SetNotes(List<int> notes)
     {
         currentNotes = new List<int>(notes);
+        if (currentNotes.Count > MaxNotes)
+        {
+            currentNotes.RemoveRange(MaxNotes, currentNotes.Count - MaxNotes);
+        }
         UpdateNotesDisplay();
     }
 
@@ -110,10 +127,11 @@ public class SudokuCell : MonoBehaviour
         
         for (int i = 0; i < noteTexts.Length; i++)
         {
-            int noteValue = i + 1;
             if (noteTexts[i] != null)
             {
-                noteTexts[i].text = currentNotes.Contains(noteValue) ? noteValue.ToString() : "";
+                noteTexts[i].text = i < currentNotes.Count && i < MaxNotes
+                    ? currentNotes[i].ToString()
+                    : "";
             }
         }
     }
