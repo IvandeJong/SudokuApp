@@ -1165,7 +1165,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -648819085104695526, guid: f3269917e388e534189a5eba8b21fcdc, type: 3}
+  m_Sprite: {fileID: -1566854534805026134, guid: 1086653be2802424085f2fdd41ecba21, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1248,6 +1248,7 @@ MonoBehaviour:
   - {fileID: 1053018191851309491}
   - {fileID: 8728257216041277601}
   backgroundImage: {fileID: 0}
+  initialCellColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
 --- !u!1 &8181249854351300983
 GameObject:
   m_ObjectHideFlags: 0

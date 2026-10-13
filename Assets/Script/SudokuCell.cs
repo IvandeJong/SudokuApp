@@ -58,6 +58,11 @@ public class SudokuCell : MonoBehaviour
             cellText.gameObject.SetActive(value != 0);
         }
 
+        if (backgroundImage != null && feedbackCoroutine == null)
+        {
+            backgroundImage.color = GetBaseColor();
+        }
+
         if (notesContainer != null)
         {
             notesContainer.SetActive(value == 0 && currentNotes.Count > 0);
@@ -137,6 +142,7 @@ public class SudokuCell : MonoBehaviour
     }
 
     [SerializeField] private Image backgroundImage; // Sleep hier de Image component van de knop in
+    [SerializeField] private Color initialCellColor = new Color(0.9f, 0.9f, 0.9f, 1f);
     public void SetSelected(bool isSelected)
     {
         this.isSelected = isSelected;
@@ -199,6 +205,11 @@ public class SudokuCell : MonoBehaviour
 
     private Color GetBaseColor()
     {
-        return isSelected ? Color.yellow : Color.white;
+        if (isSelected)
+        {
+            return Color.yellow;
+        }
+
+        return isInitial ? initialCellColor : Color.white;
     }
 }
