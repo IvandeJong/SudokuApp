@@ -45,10 +45,10 @@ public class CampaignManager : MonoBehaviour
 
     private const string ProgressKeyPrefix = "CampaignProgress_";
 
-    private bool isInitialized = false;
+    [System.NonSerialized] private bool isInitialized = false;
     private void EnsureInitialized()
     {
-        if (isInitialized) return;
+        if (isInitialized && progress != null && progress.Count > 0) return;
         InitializeLevels();
         LoadAllProgress();
         isInitialized = true;
@@ -79,6 +79,19 @@ public class CampaignManager : MonoBehaviour
         EnsureInitialized();
         if (index >= 0 && index < levels.Count) return levels[index];
         return null;
+    }
+
+    [SerializeField] private int maxAvailableLevels = 2;
+    public int MaxAvailableLevels
+    {
+        get => maxAvailableLevels;
+        set => maxAvailableLevels = value;
+    }
+
+    public bool IsLevelUnlocked(int index)
+    {
+        EnsureInitialized();
+        return index >= 0 && index < maxAvailableLevels && index < levels.Count;
     }
 
     public CampaignLevel GetNextLevel(int index)

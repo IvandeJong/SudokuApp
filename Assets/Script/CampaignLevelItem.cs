@@ -4,37 +4,127 @@ using TMPro;
 
 public class CampaignLevelItem : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI levelNameText;
-    [SerializeField] private TextMeshProUGUI statsText;
-    [SerializeField] private GameObject[] starIcons;
-    [SerializeField] private Button playButton;
+    [Header("Card")]
+    [SerializeField] private UnityEngine.UI.Image cardBackground;
+    [SerializeField] private UnityEngine.UI.Button cardButton;
+
+    [Header("Number Badge")]
+    [SerializeField] private UnityEngine.UI.Image numberBadgeImage;
+    [SerializeField] private TextMeshProUGUI numberText;
+
+    [Header("Stars")]
+    [SerializeField] private UnityEngine.UI.Image[] starImages;
+    [SerializeField] private Color starFilledColor = new Color(0.984f, 0.75f, 0.141f, 1f); // #FBBF24
+    [SerializeField] private Color starEmptyColor = new Color(0.796f, 0.835f, 0.882f, 1f);  // #CBD5E1
+
+    [Header("Difficulty Pill")]
+    [SerializeField] private UnityEngine.UI.Image pillBackground;
+    [SerializeField] private TextMeshProUGUI difficultyText;
+
+    [Header("Lock Status")]
+    [SerializeField] private GameObject lockIcon;
 
     private int levelIndex;
     private System.Action<int> onPlayClicked;
 
-    public void Setup(int index, string size, string difficulty, CampaignManager.LevelProgress progress, System.Action<int> playAction)
+    public void Setup(int index, string size, string difficulty, CampaignManager.LevelProgress progress, bool isUnlocked, System.Action<int> playAction)
     {
         levelIndex = index;
         onPlayClicked = playAction;
 
-        levelNameText.text = $"{size} - Level {index + 1} ({difficulty})";
-        
-        if (progress != null)
+        // 1. Number prefix (1, 2, 3...)
+        if (numberText != null)
         {
-            System.TimeSpan t = System.TimeSpan.FromSeconds(progress.bestTime);
-            statsText.text = $"Best: {t:mm\\:ss}";
-            for (int i = 0; i < starIcons.Length; i++)
-            {
-                starIcons[i].SetActive(i < progress.stars);
-            }
-        }
-        else
-        {
-            statsText.text = "Not played";
-            foreach (var star in starIcons) star.SetActive(false);
+            numberText.text = (index + 1).ToString();
         }
 
-        playButton.onClick.RemoveAllListeners();
-        playButton.onClick.AddListener(() => onPlayClicked?.Invoke(levelIndex));
+        // 2. Stars: grayed out and filled when completed
+        int earnedStars = progress != null ? progress.stars : 0;
+        if (starImages != null)
+        {
+            for (int i = 0; i < starImages.Length; i++)
+            {
+                if (starImages[i] != null)
+                {
+                    starImages[i].gameObject.SetActive(true);
+                    starImages[i].color = (i < earnedStars) ? starFilledColor : starEmptyColor;
+                }
+            }
+        }
+
+        // 3. Difficulty pill prefixed with type (2x2, 2x3, 3x3)
+        string sizePrefix = GetGridSizePrefix(size);
+        if (difficultyText != null)
+        {
+            difficultyText.text = $"{sizePrefix} {difficulty}";
+            ApplyDifficultyColors(difficulty);
+        }
+
+        // 4. Lock state
+        if (lockIcon != null)
+        {
+            lockIcon.SetActive(!isUnlocked);
+        }
+
+        if (cardButton != null)
+        {
+            cardButton.interactable = isUnlocked;
+            cardButton.onClick.RemoveAllListeners();
+            if (isUnlocked)
+            {
+                cardButton.onClick.AddListener(() => onPlayClicked?.Invoke(levelIndex));
+            }
+        }
+
+        if (cardBackground != null)
+        {
+            cardBackground.color = isUnlocked ? Color.white : new Color(0.97f, 0.98f, 0.99f, 0.95f);
+        }
+    }
+
+    public void Setup(int index, string size, string difficulty, CampaignManager.LevelProgress progress, System.Action<int> playAction)
+    {
+        bool unlocked = CampaignManager.Instance != null && CampaignManager.Instance.IsLevelUnlocked(index);
+        Setup(index, size, difficulty, progress, unlocked, playAction);
+    }
+
+    public static string GetGridSizePrefix(string gridSize)
+    {
+        if (string.IsNullOrEmpty(gridSize)) return "3x3";
+        if (gridSize.Equals("Nano", System.StringComparison.OrdinalIgnoreCase) || gridSize == "4x4" || gridSize == "2x2")
+            return "2x2";
+        if (gridSize.Equals("Mini", System.StringComparison.OrdinalIgnoreCase) || gridSize == "6x6" || gridSize == "2x3")
+            return "2x3";
+        return "3x3";
+    }
+
+    private void ApplyDifficultyColors(string difficulty)
+    {
+        Color bgColor;
+        Color textColor;
+
+        switch (difficulty?.ToLowerInvariant())
+        {
+            case "easy":
+                bgColor = new Color(0.902f, 0.941f, 0.988f, 1f);  // #E6F0FA
+                textColor = new Color(0.145f, 0.388f, 0.922f, 1f); // #2563EB
+                break;
+            case "medium":
+                bgColor = new Color(0.878f, 0.949f, 0.996f, 1f);  // #E0F2FE
+                textColor = new Color(0.008f, 0.518f, 0.780f, 1f); // #0284C7
+                break;
+            case "hard":
+                bgColor = new Color(0.953f, 0.910f, 1f, 1f);      // #F3E8FF
+                textColor = new Color(0.486f, 0.227f, 0.929f, 1f); // #7C3AED
+                break;
+            default:
+                bgColor = new Color(0.902f, 0.941f, 0.988f, 1f);
+                textColor = new Color(0.145f, 0.388f, 0.922f, 1f);
+                break;
+        }
+
+        if (pillBackground != null) pillBackground.color = bgColor;
+        if (difficultyText != null) difficultyText.color = textColor;
     }
 }
+

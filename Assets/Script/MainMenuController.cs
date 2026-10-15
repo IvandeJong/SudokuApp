@@ -13,6 +13,14 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private FreePlayPanelController freePlayPanel;
     [SerializeField] private CampaignPanelController campaignPanel;
 
+    private void Start()
+    {
+        if (campaignPanel != null && PlayerPrefs.GetString(GameModeKey, "") == "Campaign")
+        {
+            campaignPanel.Show();
+        }
+    }
+
     public void OpenDailySudoku()
     {
         PlayerPrefs.SetString(GameModeKey, "Daily");

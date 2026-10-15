@@ -40,7 +40,7 @@ public class SudokuGameManager : MonoBehaviour
         if (cell == null || !TryGetCellCoordinates(cell.gameObject.name, out int row, out int col) ||
             board == null || row < 0 || row >= board.GetLength(0) || col < 0 || col >= board.GetLength(1))
         {
-            Debug.LogError($"Ongeldige SudokuCell-coördinaten: {cell?.name}. Bord: {gridSize}x{gridSize}");
+            Debug.LogError($"Ongeldige SudokuCell-coï¿½rdinaten: {cell?.name}. Bord: {gridSize}x{gridSize}");
             return;
         }
 
@@ -288,8 +288,10 @@ public class SudokuGameManager : MonoBehaviour
             selectedCell = null;
         }
 
+        int currentCampaignIdx = PlayerPrefs.GetInt("CampaignLevelIndex", 0);
         bool showNextLevel = PlayerPrefs.GetString(MainMenuController.GameModeKey, "") == "Campaign" &&
-                             CampaignManager.Instance.GetNextLevel(PlayerPrefs.GetInt("CampaignLevelIndex", 0)) != null;
+                             CampaignManager.Instance.GetNextLevel(currentCampaignIdx) != null &&
+                             CampaignManager.Instance.IsLevelUnlocked(currentCampaignIdx + 1);
         Debug.Log($"WinPanel openen: {winPanel.name}, next level: {showNextLevel}");
         winPanel.Show(elapsedTime, mistakeCount, showNextLevel);
 

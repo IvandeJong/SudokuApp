@@ -117,6 +117,12 @@ public class SudokuWinPanel : MonoBehaviour
     public void StartNextCampaignLevel()
     {
         int nextIndex = PlayerPrefs.GetInt("CampaignLevelIndex", 0) + 1;
+        if (!CampaignManager.Instance.IsLevelUnlocked(nextIndex))
+        {
+            SceneManager.LoadScene("MainMenu");
+            return;
+        }
+
         CampaignManager.CampaignLevel nextLevel = CampaignManager.Instance.GetLevel(nextIndex);
         if (nextLevel == null)
         {

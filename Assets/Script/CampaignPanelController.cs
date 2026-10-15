@@ -40,13 +40,16 @@ public class CampaignPanelController : MonoBehaviour
             GameObject itemObj = Instantiate(levelItemPrefab, listContainer);
             itemObj.SetActive(true);
             var item = itemObj.GetComponent<CampaignLevelItem>();
-var progress = CampaignManager.Instance.GetProgress(level.index);
-            item.Setup(level.index, level.gridSize, level.difficulty, progress, StartCampaignLevel);
+            var progress = CampaignManager.Instance.GetProgress(level.index);
+            bool isUnlocked = CampaignManager.Instance.IsLevelUnlocked(level.index);
+            item.Setup(level.index, level.gridSize, level.difficulty, progress, isUnlocked, StartCampaignLevel);
         }
     }
 
     private void StartCampaignLevel(int index)
     {
+        if (!CampaignManager.Instance.IsLevelUnlocked(index)) return;
+
         var level = CampaignManager.Instance.GetLevel(index);
         if (level == null) return;
 

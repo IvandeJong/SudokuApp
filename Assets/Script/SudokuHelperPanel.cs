@@ -11,16 +11,21 @@ public class SudokuHelperPanel : MonoBehaviour
     private Image undoIcon;
     private Image eraseIcon;
     private TextMeshProUGUI hintBadgeText;
-    private GameObject notesOffOverlay;
+    private TextMeshProUGUI penLabel;
+    private TextMeshProUGUI notesLabel;
+    private Image penBackground;
+    private Image notesBackground;
     private Image hintIcon;
-    private Sprite noHintsIcon;
-    private Sprite availableHintsIcon;
     private readonly Color activeButtonColor = Color.white;
     private readonly Color inactiveButtonColor = new Color(0.65f, 0.65f, 0.65f, 1f);
+    private readonly Color selectedModeColor = new Color(0.2470588f, 0.5019608f, 0.7607843f, 1f);
+    private readonly Color unselectedModeColor = Color.white;
+    private readonly Color unselectedModeLabelColor = new Color(0.0980392f, 0.2039216f, 0.345098f, 1f);
 
     private void Awake()
     {
         ResolveReferences();
+        SetNotesMode(false);
     }
 
     private void ResolveReferences()
@@ -31,6 +36,10 @@ public class SudokuHelperPanel : MonoBehaviour
         eraseButton = transform.Find("EraseButton")?.GetComponent<Button>();
         undoIcon = transform.Find("UndoButton/Icon")?.GetComponent<Image>();
         eraseIcon = transform.Find("EraseButton/Icon")?.GetComponent<Image>();
+        penBackground = transform.Find("NotesButton/PEN")?.GetComponent<Image>();
+        notesBackground = transform.Find("NotesButton/NOTES")?.GetComponent<Image>();
+        penLabel = transform.Find("NotesButton/PEN/Label")?.GetComponent<TextMeshProUGUI>();
+        notesLabel = transform.Find("NotesButton/NOTES/Label")?.GetComponent<TextMeshProUGUI>();
 
         if (hintBadgeText == null)
         {
@@ -38,24 +47,11 @@ public class SudokuHelperPanel : MonoBehaviour
             if (badge != null) hintBadgeText = badge.GetComponent<TextMeshProUGUI>();
         }
 
-        if (notesOffOverlay == null)
-        {
-            Transform overlay = transform.Find("NotesButton/Icon/OFF_Overlay");
-            if (overlay != null) notesOffOverlay = overlay.gameObject;
-        }
-
         if (hintIcon == null)
         {
             Transform icon = transform.Find("HintButton/Icon");
             if (icon != null) hintIcon = icon.GetComponent<Image>();
         }
-
-        if (hintIcon != null)
-        {
-            availableHintsIcon = hintIcon.sprite;
-        }
-
-        noHintsIcon = Resources.Load<Sprite>("shape029_style03_color10");
     }
 
     public void Bind(SudokuGameManager gameManager)
@@ -108,14 +104,16 @@ public class SudokuHelperPanel : MonoBehaviour
 
     public void SetNotesMode(bool isNotesMode)
     {
-        if (notesOffOverlay != null)
-        {
-            notesOffOverlay.SetActive(!isNotesMode);
-        }
+        if (penBackground != null) penBackground.color = isNotesMode ? unselectedModeColor : selectedModeColor;
+        if (notesBackground != null) notesBackground.color = isNotesMode ? selectedModeColor : unselectedModeColor;
+        if (penLabel != null) penLabel.color = isNotesMode ? unselectedModeLabelColor : Color.white;
+        if (notesLabel != null) notesLabel.color = isNotesMode ? Color.white : unselectedModeLabelColor;
     }
 
     public void UpdateHintBadge(int remainingHints)
     {
+        SetButtonState(hintButton, hintIcon, remainingHints > 0);
+
         if (hintBadgeText != null)
         {
             hintBadgeText.text = remainingHints.ToString();
@@ -126,11 +124,6 @@ public class SudokuHelperPanel : MonoBehaviour
             {
                 badgeBackground.gameObject.SetActive(remainingHints > 0);
             }
-        }
-
-        if (hintIcon != null)
-        {
-            hintIcon.sprite = remainingHints > 0 ? availableHintsIcon : noHintsIcon;
         }
     }
 }
