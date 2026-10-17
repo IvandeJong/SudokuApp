@@ -364,6 +364,7 @@ FodyWeavers.xsd
 [Rr]ecordings/
 [Bb]uild/
 [Bb]uilds/
+/.utmp/
 
 # Unity-generated Visual Studio solution and project files
 *.csproj
