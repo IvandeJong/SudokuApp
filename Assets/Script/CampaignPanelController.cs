@@ -10,6 +10,21 @@ public class CampaignPanelController : MonoBehaviour
     [SerializeField] private GameObject levelItemPrefab;
     [SerializeField] private Button closeButton;
 
+    private CampaignLevelItem sceneLevelItem;
+
+    private void Awake()
+    {
+        if (listContainer != null && listContainer.childCount > 0)
+        {
+            sceneLevelItem = listContainer.GetChild(0).GetComponent<CampaignLevelItem>();
+        }
+    }
+
+    private void OnEnable()
+    {
+        RefreshList();
+    }
+
     private void Start()
     {
         closeButton.onClick.AddListener(Hide);
@@ -17,8 +32,14 @@ public class CampaignPanelController : MonoBehaviour
 
     public void Show()
     {
-        panelRoot.SetActive(true);
-        RefreshList();
+        if (panelRoot.activeInHierarchy)
+        {
+            RefreshList();
+        }
+        else
+        {
+            panelRoot.SetActive(true);
+        }
     }
 
     public void Hide()
@@ -28,21 +49,41 @@ public class CampaignPanelController : MonoBehaviour
 
     private void RefreshList()
     {
-        // Clear existing
-        foreach (Transform child in listContainer)
+        for (int i = listContainer.childCount - 1; i >= 0; i--)
         {
-            Destroy(child.gameObject);
+            GameObject child = listContainer.GetChild(i).gameObject;
+            if (sceneLevelItem != null && child == sceneLevelItem.gameObject) continue;
+            child.SetActive(false);
+            Destroy(child);
         }
 
         var levels = CampaignManager.Instance.GetAllLevels();
+        bool firstItem = true;
         foreach (var level in levels)
         {
-            GameObject itemObj = Instantiate(levelItemPrefab, listContainer);
+            GameObject itemObj = firstItem && sceneLevelItem != null
+                ? sceneLevelItem.gameObject
+                : Instantiate(sceneLevelItem != null ? sceneLevelItem.gameObject : levelItemPrefab, listContainer);
             itemObj.SetActive(true);
             var item = itemObj.GetComponent<CampaignLevelItem>();
             var progress = CampaignManager.Instance.GetProgress(level.index);
             bool isUnlocked = CampaignManager.Instance.IsLevelUnlocked(level.index);
             item.Setup(level.index, level.gridSize, level.difficulty, progress, isUnlocked, StartCampaignLevel);
+            firstItem = false;
+        }
+
+        if (firstItem && sceneLevelItem != null)
+        {
+            sceneLevelItem.gameObject.SetActive(false);
+        }
+
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(listContainer);
+
+        ScrollRect scrollRect = listContainer.GetComponentInParent<ScrollRect>();
+        if (scrollRect != null)
+        {
+            scrollRect.verticalNormalizedPosition = 1f;
         }
     }
 
