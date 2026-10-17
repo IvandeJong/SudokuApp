@@ -91,7 +91,16 @@ public class CampaignManager : MonoBehaviour
     public bool IsLevelUnlocked(int index)
     {
         EnsureInitialized();
-        return index >= 0 && index < maxAvailableLevels && index < levels.Count;
+        if (index < 0 || index >= levels.Count) return false;
+        if (progress.ContainsKey(index)) return true;
+
+        int incompleteLevelsBefore = 0;
+        for (int i = 0; i < index; i++)
+        {
+            if (!progress.ContainsKey(i)) incompleteLevelsBefore++;
+        }
+
+        return incompleteLevelsBefore < maxAvailableLevels;
     }
 
     public CampaignLevel GetNextLevel(int index)

@@ -120,7 +120,8 @@ public class SudokuGameManager : MonoBehaviour
 
     public void Hint()
     {
-        if (isGameFinished || hintCount >= MaxHints || solution == null) return;
+        if (isGameFinished || hintCount >= MaxHints || solution == null ||
+            (helperPanel != null && !helperPanel.CanRequestHint)) return;
 
         SudokuCell[] emptyCells = FindObjectsByType<SudokuCell>(FindObjectsInactive.Include, FindObjectsSortMode.None)
             .Where(cell => !cell.isInitial && cell.value == 0)
@@ -138,6 +139,7 @@ public class SudokuGameManager : MonoBehaviour
 
         hintCount++;
         UpdateHintBadge();
+        if (helperPanel != null) helperPanel.StartHintCooldown();
         elapsedTime += 60f; // Add 1 minute penalty
 
         if (CheckWinCondition())
@@ -418,6 +420,7 @@ public class SudokuGameManager : MonoBehaviour
 
         hintCount = 0;
         UpdateHintBadge();
+        if (helperPanel != null) helperPanel.ResetHintCooldown();
         if (helperPanel != null) helperPanel.SetNotesMode(false);
     }
 
