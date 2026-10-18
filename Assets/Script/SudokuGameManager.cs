@@ -11,6 +11,7 @@ using UnityEngine.UI;
 public class SudokuGameManager : MonoBehaviour
 {
     private SudokuCell selectedCell;
+    private SudokuCell[,] cellsByCoordinate;
     [SerializeField] private float wrongAnswerLockDuration = 1.5f;
     [SerializeField] private float correctAnswerFlashDuration = 1.5f;
     [SerializeField] private SudokuWinPanel winPanel;
@@ -34,6 +35,37 @@ public class SudokuGameManager : MonoBehaviour
     private int mistakeCount;
 
     private int[,] board;
+    private bool isDailyGame;
+    private bool hasInitializedGame;
+    private int currentGameSeed;
+    private string currentDailyDate;
+    private const string DailyStateKeyPrefix = "DailySudokuState:";
+
+    public bool IsDailyGame => isDailyGame;
+    public string CurrentDailyDate => currentDailyDate;
+
+    [Serializable]
+    private class DailyGameState
+    {
+        public int seed;
+        public int gridSize;
+        public float elapsedTime;
+        public int mistakeCount;
+        public int hintCount;
+        public bool isNotesMode;
+        public bool isGameFinished;
+        public List<DailyCellState> cells = new List<DailyCellState>();
+    }
+
+    [Serializable]
+    private class DailyCellState
+    {
+        public int row;
+        public int col;
+        public int value;
+        public bool isInitial;
+        public List<int> notes = new List<int>();
+    }
 
     public void SelectCell(SudokuCell cell)
     {
@@ -47,16 +79,8 @@ public class SudokuGameManager : MonoBehaviour
         cell.row = row;
         cell.col = col;
 
-        if (selectedCell != null)
-        {
-            selectedCell.SetSelected(false);
-        }
         selectedCell = cell;
-
-        if (selectedCell != null)
-        {
-            selectedCell.SetSelected(true);
-        }
+        UpdateCellHighlights();
 
         UpdateActionButtonStates();
         Debug.Log($"Geselecteerde cel: Rij {cell.row}, Kolom {cell.col}");
@@ -105,6 +129,7 @@ public class SudokuGameManager : MonoBehaviour
         }
 
         UpdateActionButtonStates();
+        SaveDailyGameState();
     }
 
     public void Erase()
@@ -116,6 +141,7 @@ public class SudokuGameManager : MonoBehaviour
         selectedCell.ClearNotes();
         selectedCell.SetValue(0);
         UpdateActionButtonStates();
+        SaveDailyGameState();
     }
 
     public void Hint()
@@ -146,6 +172,8 @@ public class SudokuGameManager : MonoBehaviour
         {
             HandlePuzzleSolved();
         }
+
+        SaveDailyGameState();
     }
 
     private void UpdateHintBadge()
@@ -169,7 +197,8 @@ public class SudokuGameManager : MonoBehaviour
 
     private void UpdateActionButtonStates()
     {
-        bool canErase = selectedCell != null && !selectedCell.isInitial && selectedCell.value != 0;
+        bool canErase = selectedCell != null && !selectedCell.isInitial &&
+                        (selectedCell.value != 0 || selectedCell.GetNotes().Count > 0);
         if (helperPanel != null) helperPanel.UpdateActionButtonStates(undoStack.Count > 0, canErase);
     }
 
@@ -197,8 +226,7 @@ public class SudokuGameManager : MonoBehaviour
                 bool noteAdded = selectedCell.ToggleNote(number);
                 if (noteAdded)
                 {
-                    selectedCell.SetSelected(false);
-                    selectedCell = null;
+                    ClearCellSelection();
                 }
                 UpdateActionButtonStates();
             }
@@ -207,6 +235,7 @@ public class SudokuGameManager : MonoBehaviour
                 mistakeCount++;
                 selectedCell.FlashWrongAnswer(wrongAnswerLockDuration);
             }
+            SaveDailyGameState();
             return;
         }
 
@@ -216,9 +245,9 @@ public class SudokuGameManager : MonoBehaviour
             board[row, col] = number;
             selectedCell.ClearNotes();
             selectedCell.SetValue(number);
-            selectedCell.SetSelected(false);
+            RemoveNoteFromRelatedCells(row, col, number);
             selectedCell.FlashCorrectAnswer(correctAnswerFlashDuration);
-            selectedCell = null;
+            ClearCellSelection();
             UpdateActionButtonStates();
         }
         else
@@ -226,12 +255,15 @@ public class SudokuGameManager : MonoBehaviour
             mistakeCount++;
             selectedCell.FlashWrongAnswer(wrongAnswerLockDuration);
             StartCoroutine(LockInputTemporarily());
+            SaveDailyGameState();
         }
 
         if (CheckWinCondition())
         {
             HandlePuzzleSolved();
         }
+
+        SaveDailyGameState();
     }
 
     private void Update()
@@ -283,11 +315,11 @@ public class SudokuGameManager : MonoBehaviour
     {
         isGameFinished = true;
         isInputLocked = true;
+        SaveDailyGameState();
 
         if (selectedCell != null)
         {
-            selectedCell.SetSelected(false);
-            selectedCell = null;
+            ClearCellSelection();
         }
 
         int currentCampaignIdx = PlayerPrefs.GetInt("CampaignLevelIndex", 0);
@@ -326,6 +358,38 @@ public class SudokuGameManager : MonoBehaviour
             }
         }
         return true;
+    }
+
+    private void RemoveNoteFromRelatedCells(int enteredRow, int enteredCol, int number)
+    {
+        if (cellsByCoordinate == null)
+        {
+            return;
+        }
+
+        int subGridStartRow = (enteredRow / subGridHeight) * subGridHeight;
+        int subGridStartCol = (enteredCol / subGridWidth) * subGridWidth;
+
+        for (int row = 0; row < cellsByCoordinate.GetLength(0); row++)
+        {
+            for (int col = 0; col < cellsByCoordinate.GetLength(1); col++)
+            {
+                if (row == enteredRow && col == enteredCol)
+                {
+                    continue;
+                }
+
+                bool sameRow = row == enteredRow;
+                bool sameColumn = col == enteredCol;
+                bool sameSubGrid = row >= subGridStartRow && row < subGridStartRow + subGridHeight &&
+                                   col >= subGridStartCol && col < subGridStartCol + subGridWidth;
+
+                if (sameRow || sameColumn || sameSubGrid)
+                {
+                    cellsByCoordinate[row, col]?.RemoveNote(number);
+                }
+            }
+        }
     }
 
     private IEnumerator LockInputTemporarily()
@@ -419,9 +483,202 @@ public class SudokuGameManager : MonoBehaviour
         LoadPuzzle(puzzle);
 
         hintCount = 0;
+        isDailyGame = dailyMode;
+        currentDailyDate = dailyMode ? dailyDate : null;
+        currentGameSeed = seed;
+        hasInitializedGame = true;
+
+        GameObject dailyDatePicker = GameObject.Find("DatePicker");
+        if (dailyDatePicker != null)
+        {
+            dailyDatePicker.SetActive(isDailyGame);
+        }
+
+        if (isDailyGame)
+        {
+            RestoreDailyGameState();
+        }
+
         UpdateHintBadge();
         if (helperPanel != null) helperPanel.ResetHintCooldown();
-        if (helperPanel != null) helperPanel.SetNotesMode(false);
+        if (helperPanel != null) helperPanel.SetNotesMode(isNotesMode);
+
+        if (isDailyGame && isGameFinished)
+        {
+            winPanel.Show(elapsedTime, mistakeCount, false);
+        }
+    }
+
+    public void SelectDailyDate(DateTime selectedDate)
+    {
+        if (!hasInitializedGame || !isDailyGame)
+        {
+            return;
+        }
+
+        string selectedDateText = selectedDate.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        if (selectedDateText == currentDailyDate)
+        {
+            return;
+        }
+
+        SaveDailyGameState();
+
+        currentDailyDate = selectedDateText;
+        PlayerPrefs.SetString(MainMenuController.DailyDateKey, currentDailyDate);
+        PlayerPrefs.Save();
+
+        selectedCell = null;
+        undoStack.Clear();
+        isInputLocked = false;
+        isGameFinished = false;
+        isNotesMode = false;
+        elapsedTime = 0f;
+        mistakeCount = 0;
+        hintCount = 0;
+
+        currentGameSeed = SudokuPuzzleGenerator.CreateSeed($"Daily:{currentDailyDate}");
+        int[,] puzzle = SudokuPuzzleGenerator.GenerateWithSolution(
+            currentGameSeed, "Medium", out solution, gridSize, subGridWidth, subGridHeight);
+
+        LoadPuzzle(puzzle);
+        RestoreDailyGameState();
+        ClearCellSelection();
+        UpdateHintBadge();
+        UpdateActionButtonStates();
+
+        if (helperPanel != null)
+        {
+            helperPanel.ResetHintCooldown();
+            helperPanel.SetNotesMode(isNotesMode);
+        }
+
+        winPanel.Hide();
+        if (isGameFinished)
+        {
+            winPanel.Show(elapsedTime, mistakeCount, false);
+        }
+    }
+
+    private string GetDailyStateKey()
+    {
+        return $"{DailyStateKeyPrefix}{currentGameSeed}";
+    }
+
+    private void SaveDailyGameState()
+    {
+        if (!hasInitializedGame || !isDailyGame || cellsByCoordinate == null)
+        {
+            return;
+        }
+
+        DailyGameState state = new DailyGameState
+        {
+            seed = currentGameSeed,
+            gridSize = gridSize,
+            elapsedTime = elapsedTime,
+            mistakeCount = mistakeCount,
+            hintCount = hintCount,
+            isNotesMode = isNotesMode,
+            isGameFinished = isGameFinished
+        };
+
+        for (int row = 0; row < gridSize; row++)
+        {
+            for (int col = 0; col < gridSize; col++)
+            {
+                SudokuCell cell = cellsByCoordinate[row, col];
+                if (cell == null)
+                {
+                    continue;
+                }
+
+                state.cells.Add(new DailyCellState
+                {
+                    row = row,
+                    col = col,
+                    value = cell.value,
+                    isInitial = cell.isInitial,
+                    notes = cell.GetNotes()
+                });
+            }
+        }
+
+        PlayerPrefs.SetString(GetDailyStateKey(), JsonUtility.ToJson(state));
+        PlayerPrefs.Save();
+    }
+
+    private void RestoreDailyGameState()
+    {
+        string key = GetDailyStateKey();
+        if (!PlayerPrefs.HasKey(key))
+        {
+            return;
+        }
+
+        DailyGameState state;
+        try
+        {
+            state = JsonUtility.FromJson<DailyGameState>(PlayerPrefs.GetString(key));
+        }
+        catch (Exception exception)
+        {
+            Debug.LogWarning($"Kon dagelijkse Sudoku-status voor seed {currentGameSeed} niet laden: {exception.Message}");
+            return;
+        }
+
+        if (state == null || state.seed != currentGameSeed || state.gridSize != gridSize ||
+            state.cells == null || state.cells.Count != gridSize * gridSize)
+        {
+            Debug.LogWarning($"Opgeslagen dagelijkse Sudoku-status voor seed {currentGameSeed} is ongeldig.");
+            return;
+        }
+
+        foreach (DailyCellState cellState in state.cells)
+        {
+            if (cellState.row < 0 || cellState.row >= gridSize ||
+                cellState.col < 0 || cellState.col >= gridSize)
+            {
+                continue;
+            }
+
+            SudokuCell cell = cellsByCoordinate[cellState.row, cellState.col];
+            if (cell == null)
+            {
+                continue;
+            }
+
+            board[cellState.row, cellState.col] = cellState.value;
+            cell.SetValue(cellState.value, cellState.isInitial);
+            cell.SetNotes(cellState.notes ?? new List<int>());
+        }
+
+        elapsedTime = Mathf.Max(0f, state.elapsedTime);
+        mistakeCount = Mathf.Max(0, state.mistakeCount);
+        hintCount = Mathf.Clamp(state.hintCount, 0, MaxHints);
+        isNotesMode = state.isNotesMode;
+        isGameFinished = state.isGameFinished;
+        isInputLocked = isGameFinished;
+        undoStack.Clear();
+        ClearCellSelection();
+    }
+
+    private void OnApplicationPause(bool isPaused)
+    {
+        if (isPaused)
+        {
+            SaveDailyGameState();
+        }
+    }
+
+    private void OnApplicationQuit()
+    {
+        SaveDailyGameState();
+    }
+
+    private void OnDisable()
+    {
+        SaveDailyGameState();
     }
 
     private void UpdateTitle(string mode, string difficulty)
@@ -429,7 +686,7 @@ public class SudokuGameManager : MonoBehaviour
         if (modeTitleText == null) return;
         if (mode == "Daily")
         {
-            modeTitleText.text = "DAILY SUDOKU";
+            modeTitleText.text = "Daily";
         }
         else if (mode == "Campaign")
         {
@@ -467,7 +724,7 @@ public class SudokuGameManager : MonoBehaviour
             Debug.LogWarning($"Verwacht {gridSize * gridSize} SudokuCell-objecten, maar vond {cells.Length}.");
         }
 
-        SudokuCell[,] cellsByCoordinate = new SudokuCell[gridSize, gridSize];
+        cellsByCoordinate = new SudokuCell[gridSize, gridSize];
         bool hasAllNamedCoordinates = true;
 
         foreach (SudokuCell cell in cells)
@@ -508,10 +765,43 @@ public class SudokuGameManager : MonoBehaviour
                 {
                     cell.row = r;
                     cell.col = c;
+                    cell.ClearNotes();
                     cell.SetValue(val, val != 0);
                 }
             }
         }
+    }
+
+    private void UpdateCellHighlights()
+    {
+        if (cellsByCoordinate == null)
+        {
+            return;
+        }
+
+        for (int row = 0; row < cellsByCoordinate.GetLength(0); row++)
+        {
+            for (int col = 0; col < cellsByCoordinate.GetLength(1); col++)
+            {
+                SudokuCell cell = cellsByCoordinate[row, col];
+                if (cell == null)
+                {
+                    continue;
+                }
+
+                bool isSelected = cell == selectedCell;
+                bool isRelated = selectedCell != null && !isSelected &&
+                                 (row == selectedCell.row || col == selectedCell.col);
+                cell.SetSelected(isSelected);
+                cell.SetRelatedHighlight(isRelated);
+            }
+        }
+    }
+
+    private void ClearCellSelection()
+    {
+        selectedCell = null;
+        UpdateCellHighlights();
     }
 
     private SudokuCell[,] CreateVisualCellMapping(SudokuCell[] cells)
@@ -549,6 +839,7 @@ public class SudokuGameManager : MonoBehaviour
     private const string MainMenuScene = "MainMenu";
     public void OpenMainMenu()
     {
+        SaveDailyGameState();
         SceneManager.LoadScene(MainMenuScene);
     }
 }

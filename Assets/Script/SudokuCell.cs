@@ -15,6 +15,7 @@ public class SudokuCell : MonoBehaviour
     private TextMeshProUGUI cellText;
     private SudokuGameManager gameManager;
     private bool isSelected;
+    private bool isRelatedHighlight;
     private Coroutine feedbackCoroutine;
 
     void Awake()
@@ -25,8 +26,25 @@ public class SudokuCell : MonoBehaviour
         // Zoek automatisch de Image component op ditzelfde knop-object
         backgroundImage = GetComponent<Image>();
 
+        // SudokuCell owns the background color. A Button color-tint transition also
+        // writes a tint to this Image's CanvasRenderer after a click, which can make
+        // the selected color differ from the value returned by GetBaseColor().
+        if (cellButton != null)
+        {
+            cellButton.transition = Selectable.Transition.None;
+        }
+
+        if (backgroundImage != null)
+        {
+            backgroundImage.canvasRenderer.SetColor(Color.white);
+            backgroundImage.color = GetBaseColor();
+        }
+
         // Luister naar een klik op deze cel
-        cellButton.onClick.AddListener(OnCellClicked);
+        if (cellButton != null)
+        {
+            cellButton.onClick.AddListener(OnCellClicked);
+        }
     }
 
     void OnCellClicked()
@@ -143,10 +161,25 @@ public class SudokuCell : MonoBehaviour
 
     [SerializeField] private Image backgroundImage; // Sleep hier de Image component van de knop in
     [SerializeField] private Color initialCellColor = new Color(0.9f, 0.9f, 0.9f, 1f);
+    [SerializeField] private Color selectedCellColor = new Color(0.35f, 0.65f, 1f, 1f);
+    [SerializeField] private Color relatedCellColor = new Color(0.88f, 0.94f, 1f, 1f);
+
     public void SetSelected(bool isSelected)
     {
         this.isSelected = isSelected;
 
+        RefreshBackgroundColor();
+    }
+
+    public void SetRelatedHighlight(bool isHighlighted)
+    {
+        isRelatedHighlight = isHighlighted;
+
+        RefreshBackgroundColor();
+    }
+
+    private void RefreshBackgroundColor()
+    {
         if (backgroundImage != null)
         {
             if (feedbackCoroutine == null)
@@ -207,7 +240,12 @@ public class SudokuCell : MonoBehaviour
     {
         if (isSelected)
         {
-            return Color.yellow;
+            return selectedCellColor;
+        }
+
+        if (isRelatedHighlight)
+        {
+            return relatedCellColor;
         }
 
         return isInitial ? initialCellColor : Color.white;
