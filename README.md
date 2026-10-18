@@ -21,11 +21,18 @@ This project was created as a portfolio piece focused on gameplay programming, d
 
 ## Screenshots
 
-![Sudoku Dash](SudokuDash.png)
-
-![Sudoku Game A Day](SudokuGameADay.png)
-
-![Sudoku Play Your Way](SudokuPlayYourWay.png)
+<table>
+  <tr>
+	<td align="center"><strong>Sudoku Dash</strong></td>
+	<td align="center"><strong>Sudoku Game A Day</strong></td>
+	<td align="center"><strong>Sudoku Play Your Way</strong></td>
+  </tr>
+  <tr>
+	<td align="center"><img src="SudokuDash.png" alt="Sudoku Dash" width="240"></td>
+	<td align="center"><img src="SudokuGameADay.png" alt="Sudoku Game A Day" width="240"></td>
+	<td align="center"><img src="SudokuPlayYourWay.png" alt="Sudoku Play Your Way" width="240"></td>
+  </tr>
+</table>
 
 ## How the App Works
 
