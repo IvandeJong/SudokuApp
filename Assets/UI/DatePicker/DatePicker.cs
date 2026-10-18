@@ -162,6 +162,9 @@ namespace UI.Dates
 
         public RectTransform Ref_Viewport = null;
 
+        [NonSerialized]
+        public Func<DateTime, Color?> StatusBadgeColorForDate;
+
         public bool IsVisible
         {
             get
@@ -172,6 +175,9 @@ namespace UI.Dates
 
         private bool m_initialized = false;
         private bool m_updateScheduled = false;
+        private bool m_showPending = false;
+        private int m_visibilityRequest = 0;
+        private bool m_dailyConfigurationApplied = false;
 
         void Awake()
         {
@@ -207,11 +213,60 @@ namespace UI.Dates
             }
         }
 
-        void Start()
+        IEnumerator Start()
         {
-            //UpdateDisplay();
-            //DatePickerTimer.DelayedCall(0, UpdateDisplay, this);
             SetupHoldButtons();
+
+            if (!Application.isPlaying)
+            {
+                yield break;
+            }
+
+            // SudokuGameManager establishes the selected Daily date in its Start method.
+            yield return null;
+            ConfigureForDailyGame();
+        }
+
+        private void ConfigureForDailyGame()
+        {
+            if (m_dailyConfigurationApplied || !Application.isPlaying)
+            {
+                return;
+            }
+
+            SudokuGameManager gameManager = FindFirstObjectByType<SudokuGameManager>();
+            if (gameManager == null || !gameManager.IsDailyGame)
+            {
+                return;
+            }
+
+            m_dailyConfigurationApplied = true;
+
+            DatePickerConfig config = Config;
+            config.DateRange.RestrictToDate = true;
+            config.DateRange.ToDate = new SerializableDate(DateTime.Today);
+            if (config.Events.OnDaySelected == null)
+            {
+                config.Events.OnDaySelected = new DatePickerEvent();
+            }
+
+            config.Events.OnDaySelected.RemoveListener(gameManager.SelectDailyDate);
+            config.Events.OnDaySelected.AddListener(gameManager.SelectDailyDate);
+            Config = config;
+            StatusBadgeColorForDate = gameManager.GetDailyDateBadgeColor;
+
+            if (DateTime.TryParseExact(
+                gameManager.CurrentDailyDate,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out DateTime selectedDate))
+            {
+                SelectedDate = new SerializableDate(selectedDate);
+                VisibleDate = new SerializableDate(selectedDate);
+            }
+
+            UpdateDisplay();
         }
 
         void SetupHoldButtons()
@@ -422,6 +477,7 @@ namespace UI.Dates
                 dayItem.Button.interactable = true;
                 dayItem.Type = dayType;
                 dayItem.transform.localScale = Vector3.one;
+                dayItem.SetStatusBadge(StatusBadgeColorForDate?.Invoke(day.Date));
 
                 if (dateRangeValid) // if the date range is not valid, then don't attempt to use it
                 {
@@ -795,7 +851,7 @@ namespace UI.Dates
 
         public void ToggleDisplay()
         {
-            if (Ref_DatePickerTransform.gameObject.activeInHierarchy)
+            if (Ref_DatePickerTransform.gameObject.activeInHierarchy || m_showPending)
             {
                 Hide();
             }
@@ -807,9 +863,24 @@ namespace UI.Dates
 
         public void Show(bool setPositionIfNecessary = true)
         {
+            ConfigureForDailyGame();
+
+            int visibilityRequest = m_visibilityRequest;
+            if (setPositionIfNecessary)
+            {
+                visibilityRequest = ++m_visibilityRequest;
+                m_showPending = true;
+            }
+
             if (Ref_Viewport == null)
             {
                 var canvas = FindParentOfType<Canvas>(this.gameObject);
+                if (canvas == null)
+                {
+                    m_showPending = false;
+                    Debug.LogError("DatePicker cannot be shown because it is not under a Canvas.", this);
+                    return;
+                }
                 Ref_Viewport = canvas.transform as RectTransform;
             }
 
@@ -819,11 +890,25 @@ namespace UI.Dates
                 // Position tablelayout relative to InputField
                 SetPositionAdjacentToInputFieldContainer();
                 // Wait till the end of the frame, then complete Show() (this ensures that the DatePicker only becomes visible after being resized)
-                DatePickerTimer.DelayedCall(0, () => Show(false), this, true);
+                DatePickerTimer.DelayedCall(0, () =>
+                {
+                    if (visibilityRequest == m_visibilityRequest)
+                    {
+                        Show(false);
+                    }
+                }, this, true);
                 return;
             }
 
+            if (visibilityRequest != m_visibilityRequest)
+            {
+                return;
+            }
+
+            m_showPending = false;
+
             Ref_DatePickerTransform.gameObject.SetActive(true);
+            UpdateDisplay();
 
             if (Config.Modal.IsModal && Ref_ScreenOverlay != null)
             {
@@ -857,6 +942,9 @@ namespace UI.Dates
 
         public void Hide()
         {
+            ++m_visibilityRequest;
+            m_showPending = false;
+
             if (Config.Animation.HideAnimation != Animation.None)
             {
                 PlayAnimation(Config.Animation.HideAnimation, AnimationType.Hide, _Hide);

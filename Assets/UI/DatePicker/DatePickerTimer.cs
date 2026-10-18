@@ -55,6 +55,21 @@ namespace UI.Dates
 
         private static bool IsQuitting { get; set; }
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetRuntimeState()
+        {
+            // Enter Play Mode can keep static fields when domain reload is disabled. In that
+            // case the previous session leaves IsQuitting set and the next session cannot
+            // create the timer used by popup Show callbacks.
+            IsQuitting = false;
+            _timerComponent = null;
+        }
+
+        private static void OnApplicationQuitting()
+        {
+            IsQuitting = true;
+        }
+
         public static void StartCoroutine(IEnumerator coroutine)
         {
             if (Application.isPlaying) timerComponent.StartCoroutine(coroutine);
@@ -64,7 +79,9 @@ namespace UI.Dates
         [RuntimeInitializeOnLoadMethod()]
         public static void OnLoad()
         {
-            Application.quitting += () => IsQuitting = true;
+            IsQuitting = false;
+            Application.quitting -= OnApplicationQuitting;
+            Application.quitting += OnApplicationQuitting;
         }
 #endif
 

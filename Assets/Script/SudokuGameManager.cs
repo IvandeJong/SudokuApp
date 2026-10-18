@@ -16,6 +16,7 @@ public class SudokuGameManager : MonoBehaviour
     [SerializeField] private float correctAnswerFlashDuration = 1.5f;
     [SerializeField] private SudokuWinPanel winPanel;
     [SerializeField] private TMPro.TextMeshProUGUI modeTitleText;
+    [SerializeField] private GameObject dailyDatePickerRoot;
 
     [Header("Grid Configuration")]
     [SerializeField] private int gridSize ;
@@ -488,11 +489,7 @@ public class SudokuGameManager : MonoBehaviour
         currentGameSeed = seed;
         hasInitializedGame = true;
 
-        GameObject dailyDatePicker = GameObject.Find("DatePicker");
-        if (dailyDatePicker != null)
-        {
-            dailyDatePicker.SetActive(isDailyGame);
-        }
+        ConfigureDailyDatePicker();
 
         if (isDailyGame)
         {
@@ -506,6 +503,36 @@ public class SudokuGameManager : MonoBehaviour
         if (isDailyGame && isGameFinished)
         {
             winPanel.Show(elapsedTime, mistakeCount, false);
+        }
+    }
+
+    private void ConfigureDailyDatePicker()
+    {
+        if (dailyDatePickerRoot == null)
+        {
+            MonoBehaviour[] sceneBehaviours = FindObjectsByType<MonoBehaviour>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+            MonoBehaviour picker = sceneBehaviours.FirstOrDefault(component =>
+                component.gameObject.scene == gameObject.scene &&
+                component.GetType().FullName == "UI.Dates.DatePicker");
+
+            if (picker != null)
+            {
+                dailyDatePickerRoot = picker.gameObject;
+            }
+            else
+            {
+                MonoBehaviour controller = sceneBehaviours.FirstOrDefault(component =>
+                    component.gameObject.scene == gameObject.scene &&
+                    component.GetType().Name == "DailySudokuDatePickerController");
+                dailyDatePickerRoot = controller != null ? controller.gameObject : null;
+            }
+        }
+
+        if (dailyDatePickerRoot != null)
+        {
+            dailyDatePickerRoot.SetActive(isDailyGame);
         }
     }
 
@@ -563,6 +590,45 @@ public class SudokuGameManager : MonoBehaviour
     private string GetDailyStateKey()
     {
         return $"{DailyStateKeyPrefix}{currentGameSeed}";
+    }
+
+    public bool IsDailyDateCompleted(DateTime date)
+    {
+        Color? badgeColor = GetDailyDateBadgeColor(date);
+        return badgeColor.HasValue && badgeColor.Value == new Color32(46, 204, 113, 255);
+    }
+
+    public Color? GetDailyDateBadgeColor(DateTime date)
+    {
+        int seed = SudokuPuzzleGenerator.CreateSeed(
+            $"Daily:{date.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}");
+        string key = $"{DailyStateKeyPrefix}{seed}";
+        if (!PlayerPrefs.HasKey(key))
+        {
+            return null;
+        }
+
+        try
+        {
+            DailyGameState state = JsonUtility.FromJson<DailyGameState>(PlayerPrefs.GetString(key));
+            if (state == null || state.seed != seed)
+            {
+                return null;
+            }
+
+            if (state.isGameFinished)
+            {
+                return new Color32(46, 204, 113, 255);
+            }
+
+            bool hasEnteredValue = state.cells != null &&
+                state.cells.Any(cell => !cell.isInitial && cell.value != 0);
+            return hasEnteredValue ? new Color32(243, 156, 18, 255) : null;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     private void SaveDailyGameState()

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using UI.Dates;
 using UnityEngine;
 
@@ -10,6 +11,25 @@ public class DailySudokuDatePickerController : MonoBehaviour
     private SudokuGameManager gameManager;
     private DatePicker datePicker;
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void AttachToDailyPicker()
+    {
+        SudokuGameManager manager = FindFirstObjectByType<SudokuGameManager>();
+        if (manager == null)
+        {
+            return;
+        }
+
+        DatePicker picker = FindObjectsByType<DatePicker>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None)
+            .FirstOrDefault(candidate => candidate.gameObject.scene == manager.gameObject.scene);
+
+        if (picker != null && picker.GetComponent<DailySudokuDatePickerController>() == null)
+        {
+            picker.gameObject.AddComponent<DailySudokuDatePickerController>();
+        }
+    }
+
     private IEnumerator Start()
     {
         // SudokuGameManager determines the active game mode in Start.
@@ -18,7 +38,7 @@ public class DailySudokuDatePickerController : MonoBehaviour
         gameManager = FindFirstObjectByType<SudokuGameManager>();
         if (gameManager == null || !gameManager.IsDailyGame)
         {
-            gameObject.SetActive(false);
+            Destroy(this);
             yield break;
         }
 
@@ -44,6 +64,8 @@ public class DailySudokuDatePickerController : MonoBehaviour
         }
 
         DatePickerConfig config = datePicker.Config;
+        config.DateRange.RestrictToDate = true;
+        config.DateRange.ToDate = new SerializableDate(DateTime.Today);
         DatePickerEventConfig eventConfig = config.Events;
         if (eventConfig.OnDaySelected == null)
         {
@@ -51,6 +73,7 @@ public class DailySudokuDatePickerController : MonoBehaviour
         }
         config.Events = eventConfig;
         datePicker.Config = config;
+        datePicker.StatusBadgeColorForDate = gameManager.GetDailyDateBadgeColor;
 
         datePicker.Config.Events.OnDaySelected.RemoveListener(OnDateSelected);
         datePicker.Config.Events.OnDaySelected.AddListener(OnDateSelected);
