@@ -3,8 +3,9 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
-public class SudokuCell : MonoBehaviour
+public class SudokuCell : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler
 {
     public int row;
     public int col;
@@ -49,8 +50,29 @@ public class SudokuCell : MonoBehaviour
 
     void OnCellClicked()
     {
-        // Vertel de GameManager dat deze cel is geselecteerd
-        gameManager.SelectCell(this);
+        SelectFromPointer();
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        // Select while hovering with a mouse/pen or dragging a touch across the grid.
+        SelectFromPointer();
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        // Touch devices have no hover state, so select immediately on contact.
+        SelectFromPointer();
+    }
+
+    private void SelectFromPointer()
+    {
+        if (gameManager == null)
+        {
+            gameManager = Object.FindFirstObjectByType<SudokuGameManager>();
+        }
+
+        gameManager?.SelectCell(this);
     }
 
     [SerializeField] private TextMeshProUGUI numberText; // Of Text als het geen TMP is
