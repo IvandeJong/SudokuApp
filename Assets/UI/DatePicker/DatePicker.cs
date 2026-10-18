@@ -269,6 +269,11 @@ namespace UI.Dates
             UpdateDisplay();
         }
 
+        public void InitializeDailyMode()
+        {
+            ConfigureForDailyGame();
+        }
+
         void SetupHoldButtons()
         {
             if (!Application.isPlaying) return;

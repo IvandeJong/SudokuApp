@@ -11,12 +11,26 @@ using UnityEngine.UI;
 public class SudokuGameManager : MonoBehaviour
 {
     private SudokuCell selectedCell;
+
     private SudokuCell[,] cellsByCoordinate;
+
     [SerializeField] private float wrongAnswerLockDuration = 1.5f;
+
     [SerializeField] private float correctAnswerFlashDuration = 1.5f;
+
     [SerializeField] private SudokuWinPanel winPanel;
+
     [SerializeField] private TMPro.TextMeshProUGUI modeTitleText;
-    [SerializeField] private GameObject dailyDatePickerRoot;
+
+    [SerializeField] private GameObject dailyDateHeaderRoot;
+
+    [SerializeField] private GameObject datePickerPopupRoot;
+
+    [SerializeField] private Button dailyDateHeaderButton;
+
+    [SerializeField] private TMPro.TMP_Text dailyDateHeaderText;
+
+    
 
     [Header("Grid Configuration")]
     [SerializeField] private int gridSize ;
@@ -37,10 +51,12 @@ public class SudokuGameManager : MonoBehaviour
 
     private int[,] board;
     private bool isDailyGame;
+    private bool isCampaignGame;
     private bool hasInitializedGame;
     private int currentGameSeed;
     private string currentDailyDate;
     private const string DailyStateKeyPrefix = "DailySudokuState:";
+    private const string FreePlayBestTimeKeyPrefix = "BestTime_";
 
     public bool IsDailyGame => isDailyGame;
     public string CurrentDailyDate => currentDailyDate;
@@ -316,6 +332,7 @@ public class SudokuGameManager : MonoBehaviour
     {
         isGameFinished = true;
         isInputLocked = true;
+        SaveFreePlayBestTime();
         SaveDailyGameState();
 
         if (selectedCell != null)
@@ -332,6 +349,25 @@ public class SudokuGameManager : MonoBehaviour
 
 
         Debug.Log("Sudoku opgelost!");
+    }
+
+    private void SaveFreePlayBestTime()
+    {
+        if (isDailyGame || isCampaignGame || !hasInitializedGame)
+        {
+            return;
+        }
+
+        string gridSizeName = gridSize == 4 ? "Nano" : gridSize == 6 ? "Mini" : "Classic";
+        string difficulty = PlayerPrefs.GetString(MainMenuController.DifficultyKey, configuredDifficulty);
+        string key = $"{FreePlayBestTimeKeyPrefix}{gridSizeName}_{difficulty}";
+        float previousBest = PlayerPrefs.GetFloat(key, 0f);
+
+        if (previousBest <= 0f || elapsedTime < previousBest)
+        {
+            PlayerPrefs.SetFloat(key, elapsedTime);
+            PlayerPrefs.Save();
+        }
     }
 
     private bool IsValidMove(int row, int col, int number)
@@ -485,6 +521,7 @@ public class SudokuGameManager : MonoBehaviour
 
         hintCount = 0;
         isDailyGame = dailyMode;
+        isCampaignGame = campaignMode;
         currentDailyDate = dailyMode ? dailyDate : null;
         currentGameSeed = seed;
         hasInitializedGame = true;
@@ -508,31 +545,128 @@ public class SudokuGameManager : MonoBehaviour
 
     private void ConfigureDailyDatePicker()
     {
-        if (dailyDatePickerRoot == null)
+        if (dailyDateHeaderRoot == null)
         {
-            MonoBehaviour[] sceneBehaviours = FindObjectsByType<MonoBehaviour>(
-                FindObjectsInactive.Include, FindObjectsSortMode.None);
+            dailyDateHeaderRoot = FindSceneObject("HeaderDate");
+        }
 
-            MonoBehaviour picker = sceneBehaviours.FirstOrDefault(component =>
-                component.gameObject.scene == gameObject.scene &&
-                component.GetType().FullName == "UI.Dates.DatePicker");
+        if (datePickerPopupRoot == null)
+        {
+            datePickerPopupRoot = FindSceneObject("DatePickerPopup");
+        }
 
-            if (picker != null)
+        if (dailyDateHeaderRoot != null)
+        {
+            dailyDateHeaderRoot.SetActive(isDailyGame);
+
+            if (dailyDateHeaderButton == null)
             {
-                dailyDatePickerRoot = picker.gameObject;
+                Transform buttonTransform = dailyDateHeaderRoot.transform.Find("Button");
+                dailyDateHeaderButton = buttonTransform != null
+                    ? buttonTransform.GetComponent<Button>()
+                    : dailyDateHeaderRoot.GetComponentInChildren<Button>(true);
             }
-            else
+
+            if (dailyDateHeaderText == null)
             {
-                MonoBehaviour controller = sceneBehaviours.FirstOrDefault(component =>
-                    component.gameObject.scene == gameObject.scene &&
-                    component.GetType().Name == "DailySudokuDatePickerController");
-                dailyDatePickerRoot = controller != null ? controller.gameObject : null;
+                Transform selectedDateTransform = dailyDateHeaderRoot.transform.Find("Button/SelectedDate");
+                if (selectedDateTransform == null)
+                {
+                    selectedDateTransform = FindChildByName(dailyDateHeaderRoot.transform, "SelectedDate");
+                }
+
+                if (selectedDateTransform != null)
+                {
+                    dailyDateHeaderText = selectedDateTransform.GetComponent<TMPro.TMP_Text>();
+                }
             }
         }
 
-        if (dailyDatePickerRoot != null)
+        if (dailyDateHeaderButton != null)
         {
-            dailyDatePickerRoot.SetActive(isDailyGame);
+            dailyDateHeaderButton.onClick.RemoveListener(ToggleDailyDatePickerPopup);
+            dailyDateHeaderButton.onClick.AddListener(ToggleDailyDatePickerPopup);
+        }
+
+        if (datePickerPopupRoot != null)
+        {
+            // The calendar is shown by the header button, not as a permanent scene panel.
+            datePickerPopupRoot.SetActive(false);
+        }
+
+        // Disable the previous standalone popup UI now that the inline calendar is hosted
+        // inside DatePickerPopup.
+        GameObject legacyPopup = FindSceneObject("DatePicker - Popup");
+        if (legacyPopup != null && (datePickerPopupRoot == null || !legacyPopup.transform.IsChildOf(datePickerPopupRoot.transform)))
+        {
+            legacyPopup.SetActive(false);
+        }
+
+        UpdateDailyDateHeader();
+    }
+
+    private GameObject FindSceneObject(string objectName)
+    {
+        Transform[] transforms = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        return transforms.FirstOrDefault(candidate =>
+            candidate.gameObject.scene == gameObject.scene && candidate.name == objectName)?.gameObject;
+    }
+
+    private static Transform FindChildByName(Transform parent, string childName)
+    {
+        foreach (Transform child in parent)
+        {
+            if (child.name == childName)
+            {
+                return child;
+            }
+
+            Transform match = FindChildByName(child, childName);
+            if (match != null)
+            {
+                return match;
+            }
+        }
+
+        return null;
+    }
+
+    public void ToggleDailyDatePickerPopup()
+    {
+        if (!isDailyGame || datePickerPopupRoot == null)
+        {
+            return;
+        }
+
+        bool shouldOpen = !datePickerPopupRoot.activeSelf;
+        datePickerPopupRoot.SetActive(shouldOpen);
+        if (shouldOpen)
+        {
+            foreach (MonoBehaviour component in datePickerPopupRoot.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                if (component.GetType().FullName == "UI.Dates.DatePicker")
+                {
+                    component.SendMessage("InitializeDailyMode", SendMessageOptions.DontRequireReceiver);
+                }
+            }
+        }
+    }
+
+    private void UpdateDailyDateHeader()
+    {
+        if (dailyDateHeaderText == null || string.IsNullOrEmpty(currentDailyDate))
+        {
+            return;
+        }
+
+        if (DateTime.TryParseExact(
+            currentDailyDate,
+            "yyyy-MM-dd",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out DateTime selectedDate))
+        {
+            dailyDateHeaderText.text = selectedDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         }
     }
 
@@ -546,6 +680,11 @@ public class SudokuGameManager : MonoBehaviour
         string selectedDateText = selectedDate.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         if (selectedDateText == currentDailyDate)
         {
+            UpdateDailyDateHeader();
+            if (datePickerPopupRoot != null)
+            {
+                datePickerPopupRoot.SetActive(false);
+            }
             return;
         }
 
@@ -554,6 +693,11 @@ public class SudokuGameManager : MonoBehaviour
         currentDailyDate = selectedDateText;
         PlayerPrefs.SetString(MainMenuController.DailyDateKey, currentDailyDate);
         PlayerPrefs.Save();
+        UpdateDailyDateHeader();
+        if (datePickerPopupRoot != null)
+        {
+            datePickerPopupRoot.SetActive(false);
+        }
 
         selectedCell = null;
         undoStack.Clear();
@@ -672,6 +816,12 @@ public class SudokuGameManager : MonoBehaviour
 
         PlayerPrefs.SetString(GetDailyStateKey(), JsonUtility.ToJson(state));
         PlayerPrefs.Save();
+    }
+
+
+    public void OpenDatePicker()
+    {
+        datePickerPopupRoot.SetActive(true);        
     }
 
     private void RestoreDailyGameState()
