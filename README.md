@@ -23,7 +23,7 @@ This project was created as a portfolio piece focused on gameplay programming, d
 
 ![Sudoku Dash](SudokuDash.png)
 
-![Sudoku Game A Day](SudokuGameADay.png.png)
+![Sudoku Game A Day](SudokuGameADay.png)
 
 ![Sudoku Play Your Way](SudokuPlayYourWay.png)
 
