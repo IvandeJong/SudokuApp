@@ -19,6 +19,14 @@ This project was created as a portfolio piece focused on gameplay programming, d
 - Local campaign progress saved between sessions
 - Automated EditMode tests for puzzle generation
 
+## Screenshots
+
+![Sudoku Dash](SudokuDash.png)
+
+![Sudoku Game A Day](SudokuGameADay.png.png)
+
+![Sudoku Play Your Way](SudokuPlayYourWay.png)
+
 ## How the App Works
 
 The main menu provides three ways to start a puzzle:

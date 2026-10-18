@@ -46,8 +46,9 @@ namespace UI.Dates
                 badgeTransform.sizeDelta = new Vector2(14f, 14f);
 
                 statusBadge = badgeObject.AddComponent<TextMeshProUGUI>();
-                statusBadge.text = "●";
-                statusBadge.fontSize = 12f;
+                statusBadge.font = Resources.Load<TMP_FontAsset>("Arial SDF");
+                statusBadge.text = "•";
+                statusBadge.fontSize = 32f;
                 statusBadge.alignment = TextAlignmentOptions.Center;
                 statusBadge.raycastTarget = false;
             }

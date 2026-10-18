@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: ad58f47d7e3bce5429b592765e88ca23
+guid: b3a319d8dad6bb142973887ef54757a9
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -32200828620870739
-    second: SudokuGameADay_0
+      213: 7986200136392801462
+    second: SudokuGameADay.png_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -128,7 +128,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: SudokuGameADay_0
+      name: SudokuGameADay.png_0
       rect:
         serializedVersion: 2
         x: 0
@@ -143,8 +143,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: dab649854899d8ff0800000000000000
-      internalID: -32200828620870739
+      spriteID: 6bc7eda16bea4de60800000000000000
+      internalID: 7986200136392801462
       vertices: []
       indices: 
       edges: []
@@ -163,7 +163,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      SudokuGameADay_0: -32200828620870739
+      SudokuGameADay.png_0: 7986200136392801462
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
