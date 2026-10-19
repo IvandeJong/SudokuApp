@@ -906,7 +906,7 @@ public class SudokuGameManager : MonoBehaviour
         }
         else if (mode == "Campaign")
         {
-            modeTitleText.text = $"CAMPAIGN - {difficulty.ToUpper()}";
+            modeTitleText.text = $"Adventure - {difficulty.ToUpper()}";
         }
         else
         {

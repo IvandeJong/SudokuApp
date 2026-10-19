@@ -38,7 +38,7 @@ internal sealed class AndroidBrandingSetup : IPreprocessBuildWithReport
         }
     }
 
-    [MenuItem("Sudoku DASH/Apply Android Branding")]
+    [MenuItem("Sudoku Unwind/Apply Android Branding")]
     private static void Apply()
     {
         Texture2D source = LoadSourceTexture();
