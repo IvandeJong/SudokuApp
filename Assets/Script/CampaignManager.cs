@@ -179,25 +179,8 @@ public class CampaignManager : MonoBehaviour
         var level = GetLevel(levelIndex);
         if (level == null) return 0;
 
-        // Score formula: time + mistakes * 60 (seconds per minute)
-        float score = time + mistakes * 60f;
-
-        // Thresholds based on grid size and difficulty
-        // These are estimates, can be adjusted
-        float baseTime = 0;
-        if (level.gridSize == "Nano") baseTime = 60; // 1 min
-        else if (level.gridSize == "Mini") baseTime = 180; // 3 min
-        else baseTime = 600; // 10 min
-
-        float multiplier = 1f;
-        if (level.difficulty == "Medium") multiplier = 1.5f;
-        else if (level.difficulty == "Hard") multiplier = 2.5f;
-
-        float t3 = baseTime * multiplier;
-        float t2 = t3 * 2f;
-
-        if (score <= t3) return 3;
-        if (score <= t2) return 2;
+        if (mistakes < 5) return 3;
+        if (mistakes == 5) return 2;
         return 1;
     }
 }

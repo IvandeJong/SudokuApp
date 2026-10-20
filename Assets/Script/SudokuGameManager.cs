@@ -81,6 +81,7 @@ public class SudokuGameManager : MonoBehaviour
         public int col;
         public int value;
         public bool isInitial;
+        public float incorrectEntryElapsedTime;
         public List<int> notes = new List<int>();
     }
 
@@ -143,6 +144,8 @@ public class SudokuGameManager : MonoBehaviour
             board[action.cell.row, action.cell.col] = action.oldValue;
             action.cell.SetNotes(action.oldNotes);
             action.cell.SetValue(action.oldValue);
+            action.cell.SetIncorrectEntry(
+                action.oldValue != 0 && solution[action.cell.row, action.cell.col] != action.oldValue);
         }
 
         UpdateActionButtonStates();
@@ -262,8 +265,13 @@ public class SudokuGameManager : MonoBehaviour
             board[row, col] = number;
             selectedCell.ClearNotes();
             selectedCell.SetValue(number);
+            bool matchesSolution = solution[row, col] == number;
+            selectedCell.SetIncorrectEntry(!matchesSolution);
             RemoveNoteFromRelatedCells(row, col, number);
-            selectedCell.FlashCorrectAnswer(correctAnswerFlashDuration);
+            if (matchesSolution)
+            {
+                selectedCell.FlashCorrectAnswer(correctAnswerFlashDuration);
+            }
             ClearCellSelection();
             UpdateActionButtonStates();
         }
@@ -318,11 +326,16 @@ public class SudokuGameManager : MonoBehaviour
 
     private bool CheckWinCondition()
     {
+        if (solution == null)
+        {
+            return false;
+        }
+
         for (int r = 0; r < gridSize; r++)
         {
             for (int c = 0; c < gridSize; c++)
             {
-                if (board[r, c] == 0) return false;
+                if (board[r, c] != solution[r, c]) return false;
             }
         }
         return true;
@@ -380,8 +393,8 @@ public class SudokuGameManager : MonoBehaviour
 
         for (int i = 0; i < gridSize; i++)
         {
-            if (board[row, i] == number) return false;
-            if (board[i, col] == number) return false;
+            if (i != col && board[row, i] == number) return false;
+            if (i != row && board[i, col] == number) return false;
         }
 
         int startRow = (row / subGridHeight) * subGridHeight;
@@ -391,7 +404,12 @@ public class SudokuGameManager : MonoBehaviour
         {
             for (int c = 0; c < subGridWidth; c++)
             {
-                if (board[startRow + r, startCol + c] == number) return false;
+                int candidateRow = startRow + r;
+                int candidateCol = startCol + c;
+                if ((candidateRow != row || candidateCol != col) && board[candidateRow, candidateCol] == number)
+                {
+                    return false;
+                }
             }
         }
         return true;
@@ -809,6 +827,7 @@ public class SudokuGameManager : MonoBehaviour
                     col = col,
                     value = cell.value,
                     isInitial = cell.isInitial,
+                    incorrectEntryElapsedTime = cell.GetIncorrectEntryElapsedTime(),
                     notes = cell.GetNotes()
                 });
             }
@@ -866,6 +885,10 @@ public class SudokuGameManager : MonoBehaviour
 
             board[cellState.row, cellState.col] = cellState.value;
             cell.SetValue(cellState.value, cellState.isInitial);
+            cell.SetIncorrectEntry(
+                cellState.value != 0 && !cellState.isInitial &&
+                solution[cellState.row, cellState.col] != cellState.value,
+                cellState.incorrectEntryElapsedTime);
             cell.SetNotes(cellState.notes ?? new List<int>());
         }
 

@@ -52,6 +52,14 @@ public class SudokuHelperPanel : MonoBehaviour
     private void ResolveReferences()
     {
         hintButton = transform.Find("HintButton")?.GetComponent<Button>();
+        if (hintButton != null)
+        {
+            // This script owns the hint button's enabled/disabled colors. Disable
+            // Button's tint transition so its disabled CanvasRenderer tint cannot
+            // persist after the cooldown has ended.
+            hintButton.transition = Selectable.Transition.None;
+        }
+
         notesButton = transform.Find("NotesButton")?.GetComponent<Button>();
         undoButton = transform.Find("UndoButton")?.GetComponent<Button>();
         eraseButton = transform.Find("EraseButton")?.GetComponent<Button>();

@@ -18,6 +18,10 @@ public class SudokuCell : MonoBehaviour, IPointerEnterHandler, IPointerDownHandl
     private bool isSelected;
     private bool isRelatedHighlight;
     private Coroutine feedbackCoroutine;
+    [SerializeField] private float incorrectEntryFadeDelay = 30f;
+    [SerializeField] private float incorrectEntryFadeDuration = 5f;
+    private bool isIncorrectEntry;
+    private float incorrectEntryElapsedTime;
 
     void Awake()
     {
@@ -45,6 +49,20 @@ public class SudokuCell : MonoBehaviour, IPointerEnterHandler, IPointerDownHandl
         if (cellButton != null)
         {
             cellButton.onClick.AddListener(OnCellClicked);
+        }
+    }
+
+    private void Update()
+    {
+        if (!isIncorrectEntry)
+        {
+            return;
+        }
+
+        incorrectEntryElapsedTime += Time.deltaTime;
+        if (backgroundImage != null && feedbackCoroutine == null)
+        {
+            backgroundImage.color = GetBaseColor();
         }
     }
 
@@ -85,6 +103,8 @@ public class SudokuCell : MonoBehaviour, IPointerEnterHandler, IPointerDownHandl
     {
         value = newValue;
         isInitial = initial;
+        isIncorrectEntry = false;
+        incorrectEntryElapsedTime = 0f;
 
         if (cellText == null)
         {
@@ -107,6 +127,29 @@ public class SudokuCell : MonoBehaviour, IPointerEnterHandler, IPointerDownHandl
         {
             notesContainer.SetActive(value == 0 && currentNotes.Count > 0);
         }
+    }
+
+    public void SetIncorrectEntry(bool isIncorrect, float elapsedTime = 0f)
+    {
+        isIncorrectEntry = isIncorrect && value != 0 && !isInitial;
+        incorrectEntryElapsedTime = isIncorrectEntry ? Mathf.Max(0f, elapsedTime) : 0f;
+
+        if (backgroundImage != null && feedbackCoroutine == null)
+        {
+            backgroundImage.color = GetBaseColor();
+        }
+    }
+
+    private float GetIncorrectEntryFadeProgress()
+    {
+        return isIncorrectEntry
+            ? Mathf.Clamp01((incorrectEntryElapsedTime - incorrectEntryFadeDelay) / Mathf.Max(incorrectEntryFadeDuration, 0.01f))
+            : 0f;
+    }
+
+    public float GetIncorrectEntryElapsedTime()
+    {
+        return isIncorrectEntry ? incorrectEntryElapsedTime : 0f;
     }
 
     public void AddNote(int number)
@@ -185,6 +228,7 @@ public class SudokuCell : MonoBehaviour, IPointerEnterHandler, IPointerDownHandl
     [SerializeField] private Color initialCellColor = new Color(0.9f, 0.9f, 0.9f, 1f);
     [SerializeField] private Color selectedCellColor = new Color(0.35f, 0.65f, 1f, 1f);
     [SerializeField] private Color relatedCellColor = new Color(0.88f, 0.94f, 1f, 1f);
+    [SerializeField] private Color relatedInitialCellColor = new Color(0.55f, 0.72f, 0.95f, 1f);
 
     public void SetSelected(bool isSelected)
     {
@@ -260,16 +304,26 @@ public class SudokuCell : MonoBehaviour, IPointerEnterHandler, IPointerDownHandl
 
     private Color GetBaseColor()
     {
+        float incorrectFadeProgress = GetIncorrectEntryFadeProgress();
+        if (isIncorrectEntry && incorrectFadeProgress > 0f)
+        {
+            return Color.Lerp(isInitial ? initialCellColor : Color.white, Color.red, incorrectFadeProgress);
+        }
+
+        Color baseColor;
         if (isSelected)
         {
-            return selectedCellColor;
+            baseColor = selectedCellColor;
         }
-
-        if (isRelatedHighlight)
+        else if (isRelatedHighlight)
         {
-            return relatedCellColor;
+            baseColor = isInitial ? relatedInitialCellColor : relatedCellColor;
+        }
+        else
+        {
+            baseColor = isInitial ? initialCellColor : Color.white;
         }
 
-        return isInitial ? initialCellColor : Color.white;
+        return baseColor;
     }
 }

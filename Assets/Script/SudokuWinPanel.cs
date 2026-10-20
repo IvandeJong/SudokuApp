@@ -16,17 +16,25 @@ public class SudokuWinPanel : MonoBehaviour
     [SerializeField] private GameObject[] starIcons; // 3 stars
 
     private Button mainMenuButtonComponent;
+    private Button closeButton;
     private Button nextLevelButtonComponent;
 
     private void Awake()
     {
         mainMenuButtonComponent = FindButton("MenuButton");
+        closeButton = FindButton("CloseButton");
         nextLevelButtonComponent = FindButton("NextLevelButton");
 
         if (mainMenuButtonComponent != null)
         {
             mainMenuButtonComponent.onClick.RemoveAllListeners();
             mainMenuButtonComponent.onClick.AddListener(OpenMainMenu);
+        }
+
+        if (closeButton != null)
+        {
+            closeButton.onClick.RemoveAllListeners();
+            closeButton.onClick.AddListener(Hide);
         }
 
         if (nextLevelButtonComponent != null)
@@ -67,18 +75,18 @@ public class SudokuWinPanel : MonoBehaviour
 
         if (titleText != null)
         {
-            titleText.text = isCampaign ? "Level Voltooid!" : "Sudoku opgelost!";
+            titleText.text = isCampaign ? "Level Completed!" : "Sudoku solved!";
         }
 
         TimeSpan time = TimeSpan.FromSeconds(totalSeconds);
         if (totalTimeText != null)
         {
-            totalTimeText.text = $"Totale tijd: {time:mm\\:ss}";
+            totalTimeText.text = $"Total time: {time:mm\\:ss}";
         }
 
         if (mistakesText != null)
         {
-            mistakesText.text = $"Aantal fouten: {mistakes}";
+            mistakesText.text = $"Mistakes: {mistakes}";
         }
 
         if (isCampaign)
