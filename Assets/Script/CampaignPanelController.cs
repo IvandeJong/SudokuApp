@@ -68,7 +68,7 @@ public class CampaignPanelController : MonoBehaviour
             var item = itemObj.GetComponent<CampaignLevelItem>();
             var progress = CampaignManager.Instance.GetProgress(level.index);
             bool isUnlocked = CampaignManager.Instance.IsLevelUnlocked(level.index);
-            item.Setup(level.index, level.gridSize, level.difficulty, progress, isUnlocked, StartCampaignLevel);
+            item.Setup(level.index, level.levelType, level.difficulty, progress, isUnlocked, StartCampaignLevel);
             firstItem = false;
         }
 
@@ -94,13 +94,13 @@ public class CampaignPanelController : MonoBehaviour
         var level = CampaignManager.Instance.GetLevel(index);
         if (level == null) return;
 
-        PlayerPrefs.SetString(MainMenuController.GameModeKey, "Campaign");
-        PlayerPrefs.SetInt("CampaignLevelIndex", index);
+        PlayerPrefs.SetString(PlayerPrefsKey.SudokuGameMode.ToString(), GameModes.Campaign);
+        PlayerPrefs.SetInt(PlayerPrefsKey.CampaignLevelIndex.ToString(), index);
         PlayerPrefs.Save();
 
-        string sceneName = "SudokuClassic";
-        if (level.gridSize == "Nano") sceneName = "SudokuNano";
-        else if (level.gridSize == "Mini") sceneName = "SudokuMini";
+        string sceneName = SceneNames.SudokuClassic;
+        if (level.levelType == CampaignLevelType.Nano) sceneName = SceneNames.SudokuNano;
+        else if (level.levelType == CampaignLevelType.Mini) sceneName = SceneNames.SudokuMini;
 
         SceneManager.LoadScene(sceneName);
     }

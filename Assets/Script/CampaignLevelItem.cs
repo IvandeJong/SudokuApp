@@ -1,23 +1,23 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CampaignLevelItem : MonoBehaviour
 {
     [Header("Card")]
-    [SerializeField] private UnityEngine.UI.Image cardBackground;
-    [SerializeField] private UnityEngine.UI.Button cardButton;
+    [SerializeField] private Image cardBackground;
+    [SerializeField] private Button cardButton;
 
     [Header("Number Badge")]
-    [SerializeField] private UnityEngine.UI.Image numberBadgeImage;
     [SerializeField] private TextMeshProUGUI numberText;
 
     [Header("Stars")]
-    [SerializeField] private UnityEngine.UI.Image[] starImages;
+    [SerializeField] private Image[] starImages;
     [SerializeField] private Color starFilledColor = new Color(0.984f, 0.75f, 0.141f, 1f); // #FBBF24
     [SerializeField] private Color starEmptyColor = new Color(0.796f, 0.835f, 0.882f, 1f);  // #CBD5E1
 
     [Header("Difficulty Pill")]
-    [SerializeField] private UnityEngine.UI.Image pillBackground;
+    [SerializeField] private Image pillBackground;
     [SerializeField] private TextMeshProUGUI difficultyText;
 
     [Header("Lock Status")]
@@ -26,7 +26,7 @@ public class CampaignLevelItem : MonoBehaviour
     private int levelIndex;
     private System.Action<int> onPlayClicked;
 
-    public void Setup(int index, string size, string difficulty, CampaignManager.LevelProgress progress, bool isUnlocked, System.Action<int> playAction)
+    public void Setup(int index, CampaignLevelType levelType, CampaignDifficulty difficulty, CampaignManager.LevelProgress progress, bool isUnlocked, System.Action<int> playAction)
     {
         levelIndex = index;
         onPlayClicked = playAction;
@@ -52,7 +52,7 @@ public class CampaignLevelItem : MonoBehaviour
         }
 
         // 3. Difficulty pill prefixed with type (2x2, 2x3, 3x3)
-        string sizePrefix = GetGridSizePrefix(size);
+        string sizePrefix = GetGridSizePrefix(levelType);
         if (difficultyText != null)
         {
             difficultyText.text = $"{sizePrefix} {difficulty}";
@@ -81,38 +81,41 @@ public class CampaignLevelItem : MonoBehaviour
         }
     }
 
-    public void Setup(int index, string size, string difficulty, CampaignManager.LevelProgress progress, System.Action<int> playAction)
+    public void Setup(int index, CampaignLevelType levelType, CampaignDifficulty difficulty, CampaignManager.LevelProgress progress, System.Action<int> playAction)
     {
         bool unlocked = CampaignManager.Instance != null && CampaignManager.Instance.IsLevelUnlocked(index);
-        Setup(index, size, difficulty, progress, unlocked, playAction);
+        Setup(index, levelType, difficulty, progress, unlocked, playAction);
     }
 
-    public static string GetGridSizePrefix(string gridSize)
+    public static string GetGridSizePrefix(CampaignLevelType levelType)
     {
-        if (string.IsNullOrEmpty(gridSize)) return "3x3";
-        if (gridSize.Equals("Nano", System.StringComparison.OrdinalIgnoreCase) || gridSize == "4x4" || gridSize == "2x2")
-            return "2x2";
-        if (gridSize.Equals("Mini", System.StringComparison.OrdinalIgnoreCase) || gridSize == "6x6" || gridSize == "2x3")
-            return "2x3";
-        return "3x3";
+        switch (levelType)
+        {
+            case CampaignLevelType.Nano:
+                return "2x2";
+            case CampaignLevelType.Mini:
+                return "2x3";
+            default:
+                return "3x3";
+        }
     }
 
-    private void ApplyDifficultyColors(string difficulty)
+    private void ApplyDifficultyColors(CampaignDifficulty difficulty)
     {
         Color bgColor;
         Color textColor;
 
-        switch (difficulty?.ToLowerInvariant())
+        switch (difficulty)
         {
-            case "easy":
+            case CampaignDifficulty.Easy:
                 bgColor = new Color(0.902f, 0.941f, 0.988f, 1f);  // #E6F0FA
                 textColor = new Color(0.145f, 0.388f, 0.922f, 1f); // #2563EB
                 break;
-            case "medium":
+            case CampaignDifficulty.Medium:
                 bgColor = new Color(0.878f, 0.949f, 0.996f, 1f);  // #E0F2FE
                 textColor = new Color(0.008f, 0.518f, 0.780f, 1f); // #0284C7
                 break;
-            case "hard":
+            case CampaignDifficulty.Hard:
                 bgColor = new Color(0.953f, 0.910f, 1f, 1f);      // #F3E8FF
                 textColor = new Color(0.486f, 0.227f, 0.929f, 1f); // #7C3AED
                 break;

@@ -1,13 +1,11 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using System.Collections.Generic;
 
 public class FreePlayPanelController : MonoBehaviour
 {
     [Header("UI Panels")]
     [SerializeField] private GameObject panelRoot;
-    [SerializeField] private GameObject bestTimesPanel;
 
     [Header("Grid Size Buttons")]
     [SerializeField] private Button nanoButton;
@@ -28,19 +26,17 @@ public class FreePlayPanelController : MonoBehaviour
     [SerializeField] private Button startGameButton;
     [SerializeField] private Button closeButton;
 
-    private const string FreePlayModeValue = "FreePlay";
-
-    private string selectedGridSize = "Classic";
+    private CampaignLevelType selectedGridSize = CampaignLevelType.Classic;
     private string selectedDifficulty = "Medium";
 
     private Color selectedColor = new Color(0.75f, 0.82f, 0.90f, 1f);
     private Color normalColor = new Color(0.92f, 0.95f, 0.98f, 1f);
 
-    void Start()
+    private void Start()
     {
-        nanoButton.onClick.AddListener(() => SetGridSize("Nano"));
-        miniButton.onClick.AddListener(() => SetGridSize("Mini"));
-        classicButton.onClick.AddListener(() => SetGridSize("Classic"));
+        nanoButton.onClick.AddListener(() => SetGridSize(CampaignLevelType.Nano));
+        miniButton.onClick.AddListener(() => SetGridSize(CampaignLevelType.Mini));
+        classicButton.onClick.AddListener(() => SetGridSize(CampaignLevelType.Classic));
 
         easyButton.onClick.AddListener(() => SetDifficulty("Easy"));
         mediumButton.onClick.AddListener(() => SetDifficulty("Medium"));
@@ -50,7 +46,7 @@ public class FreePlayPanelController : MonoBehaviour
         closeButton.onClick.AddListener(Hide);
 
         // Set defaults
-        SetGridSize("Classic");
+        SetGridSize(CampaignLevelType.Classic);
         SetDifficulty("Medium");
     }
 
@@ -65,12 +61,12 @@ public class FreePlayPanelController : MonoBehaviour
         panelRoot.SetActive(false);
     }
 
-    private void SetGridSize(string size)
+    private void SetGridSize(CampaignLevelType size)
     {
         selectedGridSize = size;
-        UpdateButtonVisuals(nanoButton, selectedGridSize == "Nano");
-        UpdateButtonVisuals(miniButton, selectedGridSize == "Mini");
-        UpdateButtonVisuals(classicButton, selectedGridSize == "Classic");
+        UpdateButtonVisuals(nanoButton, selectedGridSize == CampaignLevelType.Nano);
+        UpdateButtonVisuals(miniButton, selectedGridSize == CampaignLevelType.Mini);
+        UpdateButtonVisuals(classicButton, selectedGridSize == CampaignLevelType.Classic);
         UpdateBestTimes();
     }
 
@@ -97,9 +93,9 @@ public class FreePlayPanelController : MonoBehaviour
         hardTimeText.text = $"Hard\n{FormatTime(GetBestTime(selectedGridSize, "Hard"))}";
     }
 
-    private float GetBestTime(string gridSize, string difficulty)
+    private float GetBestTime(CampaignLevelType gridSize, string difficulty)
     {
-        string key = $"BestTime_{gridSize}_{difficulty}";
+        string key = $"{PlayerPrefsKey.BestTime_}{gridSize}_{difficulty}";
         return PlayerPrefs.GetFloat(key, 0f);
     }
 
@@ -114,14 +110,17 @@ public class FreePlayPanelController : MonoBehaviour
     private void StartGame()
     {
         Debug.Log($"Starting Free Play: {selectedGridSize} - {selectedDifficulty}");
-        PlayerPrefs.SetString(MainMenuController.GameModeKey, FreePlayModeValue);
-        PlayerPrefs.SetString(MainMenuController.GridSizeKey, selectedGridSize);
-        PlayerPrefs.SetString(MainMenuController.DifficultyKey, selectedDifficulty);
+        PlayerPrefs.SetString(PlayerPrefsKey.SudokuGameMode.ToString(), GameModes.FreePlay);
+        PlayerPrefs.SetString(PlayerPrefsKey.CurrentGridSize.ToString(), selectedGridSize.ToString());
+        PlayerPrefs.SetString(PlayerPrefsKey.CurrentDifficulty.ToString(), selectedDifficulty);
         PlayerPrefs.Save();
-        
-        string sceneName = "SudokuClassic";
-        if (selectedGridSize == "Nano") sceneName = "SudokuNano";
-        else if (selectedGridSize == "Mini") sceneName = "SudokuMini";
+
+        string sceneName = selectedGridSize switch
+        {
+            CampaignLevelType.Nano => SceneNames.SudokuNano,
+            CampaignLevelType.Mini => SceneNames.SudokuMini,
+            _ => SceneNames.SudokuClassic
+        };
 
         UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
     }

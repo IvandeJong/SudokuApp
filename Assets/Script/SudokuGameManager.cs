@@ -55,8 +55,6 @@ public class SudokuGameManager : MonoBehaviour
     private bool hasInitializedGame;
     private int currentGameSeed;
     private string currentDailyDate;
-    private const string DailyStateKeyPrefix = "DailySudokuState:";
-    private const string FreePlayBestTimeKeyPrefix = "BestTime_";
 
     public bool IsDailyGame => isDailyGame;
     public string CurrentDailyDate => currentDailyDate;
@@ -353,8 +351,8 @@ public class SudokuGameManager : MonoBehaviour
             ClearCellSelection();
         }
 
-        int currentCampaignIdx = PlayerPrefs.GetInt("CampaignLevelIndex", 0);
-        bool showNextLevel = PlayerPrefs.GetString(MainMenuController.GameModeKey, "") == "Campaign" &&
+        int currentCampaignIdx = PlayerPrefs.GetInt(PlayerPrefsKey.CampaignLevelIndex.ToString(), 0);
+        bool showNextLevel = PlayerPrefs.GetString(PlayerPrefsKey.SudokuGameMode.ToString(), "") == GameModes.Campaign &&
                              CampaignManager.Instance.GetNextLevel(currentCampaignIdx) != null &&
                              CampaignManager.Instance.IsLevelUnlocked(currentCampaignIdx + 1);
         Debug.Log($"WinPanel openen: {winPanel.name}, next level: {showNextLevel}");
@@ -372,8 +370,8 @@ public class SudokuGameManager : MonoBehaviour
         }
 
         string gridSizeName = gridSize == 4 ? "Nano" : gridSize == 6 ? "Mini" : "Classic";
-        string difficulty = PlayerPrefs.GetString(MainMenuController.DifficultyKey, configuredDifficulty);
-        string key = $"{FreePlayBestTimeKeyPrefix}{gridSizeName}_{difficulty}";
+        string difficulty = PlayerPrefs.GetString(PlayerPrefsKey.CurrentDifficulty.ToString(), configuredDifficulty);
+        string key = $"{PlayerPrefsKey.BestTime_}{gridSizeName}_{difficulty}";
         float previousBest = PlayerPrefs.GetFloat(key, 0f);
 
         if (previousBest <= 0f || elapsedTime < previousBest)
@@ -486,25 +484,39 @@ public class SudokuGameManager : MonoBehaviour
         bool campaignMode = false;
         int campaignIndex = -1;
 
-        if (useMenuSettings && PlayerPrefs.HasKey(MainMenuController.GameModeKey))
+        if (useMenuSettings && PlayerPrefs.HasKey(PlayerPrefsKey.SudokuGameMode.ToString()))
         {
-            string mode = PlayerPrefs.GetString(MainMenuController.GameModeKey);
-            dailyMode = mode == "Daily";
-            campaignMode = mode == "Campaign";
-            difficulty = PlayerPrefs.GetString(MainMenuController.DifficultyKey, configuredDifficulty);
-            dailyDate = PlayerPrefs.GetString(MainMenuController.DailyDateKey, dailyDate);
+            string mode = PlayerPrefs.GetString(PlayerPrefsKey.SudokuGameMode.ToString());
+            dailyMode = mode == GameModes.Daily;
+            campaignMode = mode == GameModes.Campaign;
+            difficulty = PlayerPrefs.GetString(PlayerPrefsKey.CurrentDifficulty.ToString(), configuredDifficulty);
+            dailyDate = PlayerPrefs.GetString(PlayerPrefsKey.SudokuDailyDate.ToString(), dailyDate);
 
             if (campaignMode)
             {
-                campaignIndex = PlayerPrefs.GetInt("CampaignLevelIndex", 0);
+                campaignIndex = PlayerPrefs.GetInt(PlayerPrefsKey.CampaignLevelIndex.ToString(), 0);
                 var level = CampaignManager.Instance.GetLevel(campaignIndex);
                 if (level != null)
                 {
-                    difficulty = level.difficulty;
-                    string sizeStr = level.gridSize;
-                    if (sizeStr == "Nano") { gridSize = 4; subGridWidth = 2; subGridHeight = 2; }
-                    else if (sizeStr == "Mini") { gridSize = 6; subGridWidth = 3; subGridHeight = 2; }
-                    else { gridSize = 9; subGridWidth = 3; subGridHeight = 3; }
+                    difficulty = level.difficulty.ToString();
+                    switch (level.levelType)
+                    {
+                        case CampaignLevelType.Nano:
+                            gridSize = 4;
+                            subGridWidth = 2;
+                            subGridHeight = 2;
+                            break;
+                        case CampaignLevelType.Mini:
+                            gridSize = 6;
+                            subGridWidth = 3;
+                            subGridHeight = 2;
+                            break;
+                        default:
+                            gridSize = 9;
+                            subGridWidth = 3;
+                            subGridHeight = 3;
+                            break;
+                    }
                 }
             }
 
@@ -512,16 +524,16 @@ public class SudokuGameManager : MonoBehaviour
         }
         else
         {
-            UpdateTitle(dailyMode ? "Daily" : "FreePlay", difficulty);
+            UpdateTitle(dailyMode ? GameModes.Daily : GameModes.FreePlay, difficulty);
         }
 
         if (dailyMode)
         {
             difficulty = "Medium";
         }
-        else if (!campaignMode && useMenuSettings && PlayerPrefs.HasKey(MainMenuController.GridSizeKey))
+        else if (!campaignMode && useMenuSettings && PlayerPrefs.HasKey(PlayerPrefsKey.CurrentGridSize.ToString()))
         {
-            string sizeStr = PlayerPrefs.GetString(MainMenuController.GridSizeKey);
+            string sizeStr = PlayerPrefs.GetString(PlayerPrefsKey.CurrentGridSize.ToString());
             if (sizeStr == "Nano") { gridSize = 4; subGridWidth = 2; subGridHeight = 2; }
             else if (sizeStr == "Mini") { gridSize = 6; subGridWidth = 3; subGridHeight = 2; }
             else { gridSize = 9; subGridWidth = 3; subGridHeight = 3; }
@@ -530,8 +542,8 @@ public class SudokuGameManager : MonoBehaviour
         board = new int[gridSize, gridSize];
 
         string seedText = dailyMode
-            ? $"Daily:{dailyDate}"
-            : (campaignMode ? $"Campaign:{campaignIndex}" : $"FreePlay:{DateTime.Now.Ticks}");
+            ? $"{GameModes.Daily}:{dailyDate}"
+            : (campaignMode ? $"{GameModes.Campaign}:{campaignIndex}" : $"{GameModes.FreePlay}:{DateTime.Now.Ticks}");
         int seed = SudokuPuzzleGenerator.CreateSeed(seedText);
         int[,] puzzle = SudokuPuzzleGenerator.GenerateWithSolution(seed, difficulty, out solution, gridSize, subGridWidth, subGridHeight);
 
@@ -709,7 +721,7 @@ public class SudokuGameManager : MonoBehaviour
         SaveDailyGameState();
 
         currentDailyDate = selectedDateText;
-        PlayerPrefs.SetString(MainMenuController.DailyDateKey, currentDailyDate);
+        PlayerPrefs.SetString(PlayerPrefsKey.SudokuDailyDate.ToString(), currentDailyDate);
         PlayerPrefs.Save();
         UpdateDailyDateHeader();
         if (datePickerPopupRoot != null)
@@ -726,7 +738,7 @@ public class SudokuGameManager : MonoBehaviour
         mistakeCount = 0;
         hintCount = 0;
 
-        currentGameSeed = SudokuPuzzleGenerator.CreateSeed($"Daily:{currentDailyDate}");
+        currentGameSeed = SudokuPuzzleGenerator.CreateSeed($"{GameModes.Daily}:{currentDailyDate}");
         int[,] puzzle = SudokuPuzzleGenerator.GenerateWithSolution(
             currentGameSeed, "Medium", out solution, gridSize, subGridWidth, subGridHeight);
 
@@ -751,7 +763,7 @@ public class SudokuGameManager : MonoBehaviour
 
     private string GetDailyStateKey()
     {
-        return $"{DailyStateKeyPrefix}{currentGameSeed}";
+        return $"{PlayerPrefsKey.DailySudokuState}:{currentGameSeed}";
     }
 
     public bool IsDailyDateCompleted(DateTime date)
@@ -763,8 +775,8 @@ public class SudokuGameManager : MonoBehaviour
     public Color? GetDailyDateBadgeColor(DateTime date)
     {
         int seed = SudokuPuzzleGenerator.CreateSeed(
-            $"Daily:{date.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}");
-        string key = $"{DailyStateKeyPrefix}{seed}";
+            $"{GameModes.Daily}:{date.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}");
+        string key = $"{PlayerPrefsKey.DailySudokuState}:{seed}";
         if (!PlayerPrefs.HasKey(key))
         {
             return null;
@@ -923,11 +935,11 @@ public class SudokuGameManager : MonoBehaviour
     private void UpdateTitle(string mode, string difficulty)
     {
         if (modeTitleText == null) return;
-        if (mode == "Daily")
+        if (mode == GameModes.Daily)
         {
-            modeTitleText.text = "Daily";
+            modeTitleText.text = GameModes.Daily;
         }
-        else if (mode == "Campaign")
+        else if (mode == GameModes.Campaign)
         {
             modeTitleText.text = $"Adventure - {difficulty.ToUpper()}";
         }
@@ -1075,10 +1087,9 @@ public class SudokuGameManager : MonoBehaviour
         return row >= 0 && col >= 0;
     }
 
-    private const string MainMenuScene = "MainMenu";
     public void OpenMainMenu()
     {
         SaveDailyGameState();
-        SceneManager.LoadScene(MainMenuScene);
+        SceneManager.LoadScene(SceneNames.MainMenu);
     }
 }

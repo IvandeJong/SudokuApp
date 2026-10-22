@@ -2,23 +2,44 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
 
+public static class SceneNames
+{
+    public const string MainMenu = "MainMenu";
+    public const string SudokuNano = "SudokuNano";
+    public const string SudokuMini = "SudokuMini";
+    public const string SudokuClassic = "SudokuClassic";
+}
+
+public static class GameModes
+{
+    public const string FreePlay = "FreePlay";
+    public const string Campaign = "Campaign";
+    public const string Daily = "Daily";
+}
+
+public enum PlayerPrefsKey
+{
+    SudokuGameMode,
+    SudokuDailyDate,
+    CurrentGridSize,
+    CurrentDifficulty,
+    CampaignLevelIndex,
+    CampaignProgress_,
+    BestTime_,
+    DailySudokuState
+}
+
 public class MainMenuController : MonoBehaviour
 {
-    public const string SudokuSceneName = "SudokuClassic";
-    public const string GameModeKey = "SudokuGameMode";
-    public const string DailyDateKey = "SudokuDailyDate";
-    public const string GridSizeKey = "CurrentGridSize";
-    public const string DifficultyKey = "CurrentDifficulty";
-
     [SerializeField] private FreePlayPanelController freePlayPanel;
     [SerializeField] private CampaignPanelController campaignPanel;
 
     public void OpenDailySudoku()
     {
-        PlayerPrefs.SetString(GameModeKey, "Daily");
-        PlayerPrefs.SetString(DailyDateKey, DateTime.Now.ToString("yyyy-MM-dd"));
+        PlayerPrefs.SetString(PlayerPrefsKey.SudokuGameMode.ToString(), GameModes.Daily);
+        PlayerPrefs.SetString(PlayerPrefsKey.SudokuDailyDate.ToString(), DateTime.Now.ToString("yyyy-MM-dd"));
         PlayerPrefs.Save();
-        SceneManager.LoadScene(SudokuSceneName);
+        SceneManager.LoadScene(SceneNames.SudokuClassic);
     }
 
     public void OpenCampaign()

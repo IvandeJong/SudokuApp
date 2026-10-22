@@ -2,6 +2,20 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
+public enum CampaignLevelType
+{
+    Nano,
+    Mini,
+    Classic
+}
+
+public enum CampaignDifficulty
+{
+    Easy,
+    Medium,
+    Hard
+}
+
 public class CampaignManager : MonoBehaviour
 {
     public static CampaignManager Instance
@@ -36,14 +50,12 @@ public class CampaignManager : MonoBehaviour
     public class CampaignLevel
     {
         public int index;
-        public string gridSize;
-        public string difficulty;
+        public CampaignLevelType levelType;
+        public CampaignDifficulty difficulty;
     }
 
     private List<CampaignLevel> levels = new List<CampaignLevel>();
     private Dictionary<int, LevelProgress> progress = new Dictionary<int, LevelProgress>();
-
-    private const string ProgressKeyPrefix = "CampaignProgress_";
 
     [System.NonSerialized] private bool isInitialized = false;
     private void EnsureInitialized()
@@ -123,7 +135,7 @@ public class CampaignManager : MonoBehaviour
                 bestMistakes = mistakes
             };
             progress[index] = lp;
-            PlayerPrefs.SetString(ProgressKeyPrefix + index, JsonUtility.ToJson(lp));
+            PlayerPrefs.SetString(GetProgressKey(index), JsonUtility.ToJson(lp));
             PlayerPrefs.Save();
         }
     }
@@ -141,24 +153,32 @@ public class CampaignManager : MonoBehaviour
         int index = 0;
 
         // 5 Nano (E, E, M, M, H)
-        AddLevels("Nano", new[] { "Easy", "Easy", "Medium", "Medium", "Hard" }, ref index);
+        CampaignDifficulty[] smallLevelDifficulties =
+        {
+            CampaignDifficulty.Easy,
+            CampaignDifficulty.Easy,
+            CampaignDifficulty.Medium,
+            CampaignDifficulty.Medium,
+            CampaignDifficulty.Hard
+        };
+        AddLevels(CampaignLevelType.Nano, smallLevelDifficulties, ref index);
 
         // 5 Mini (E, E, M, M, H)
-        AddLevels("Mini", new[] { "Easy", "Easy", "Medium", "Medium", "Hard" }, ref index);
+        AddLevels(CampaignLevelType.Mini, smallLevelDifficulties, ref index);
 
         // 100 Classic (10E, 30M, 60H)
-        string[] classicDiffs = new string[100];
-        for (int i = 0; i < 10; i++) classicDiffs[i] = "Easy";
-        for (int i = 10; i < 40; i++) classicDiffs[i] = "Medium";
-        for (int i = 40; i < 100; i++) classicDiffs[i] = "Hard";
-        AddLevels("Classic", classicDiffs, ref index);
+        CampaignDifficulty[] classicDifficulties = new CampaignDifficulty[100];
+        for (int i = 0; i < 10; i++) classicDifficulties[i] = CampaignDifficulty.Easy;
+        for (int i = 10; i < 40; i++) classicDifficulties[i] = CampaignDifficulty.Medium;
+        for (int i = 40; i < 100; i++) classicDifficulties[i] = CampaignDifficulty.Hard;
+        AddLevels(CampaignLevelType.Classic, classicDifficulties, ref index);
     }
 
-    private void AddLevels(string size, string[] difficulties, ref int index)
+    private void AddLevels(CampaignLevelType levelType, CampaignDifficulty[] difficulties, ref int index)
     {
         foreach (var diff in difficulties)
         {
-            levels.Add(new CampaignLevel { index = index++, gridSize = size, difficulty = diff });
+            levels.Add(new CampaignLevel { index = index++, levelType = levelType, difficulty = diff });
         }
     }
 
@@ -166,12 +186,17 @@ public class CampaignManager : MonoBehaviour
     {
         for (int i = 0; i < levels.Count; i++)
         {
-            string json = PlayerPrefs.GetString(ProgressKeyPrefix + i, "");
+            string json = PlayerPrefs.GetString(GetProgressKey(i), "");
             if (!string.IsNullOrEmpty(json))
             {
                 progress[i] = JsonUtility.FromJson<LevelProgress>(json);
             }
         }
+    }
+
+    private static string GetProgressKey(int index)
+    {
+        return $"{PlayerPrefsKey.CampaignProgress_}{index}";
     }
 
     public int CalculateStars(int levelIndex, float time, int mistakes)

@@ -98,104 +98,104 @@ public class SudokuHelperPanel : MonoBehaviour
     }
 
     public void Bind(SudokuGameManager gameManager)
-{
-    ResolveReferences();
-    this.gameManager = gameManager;
-
-    if (hintButton != null)
     {
-        hintButton.onClick.RemoveAllListeners();
-        hintButton.onClick.AddListener(HandleHintRequest);
+        ResolveReferences();
+        this.gameManager = gameManager;
+
+        if (hintButton != null)
+        {
+            hintButton.onClick.RemoveAllListeners();
+            hintButton.onClick.AddListener(HandleHintRequest);
+            UpdateHintButtonState();
+        }
+
+        if (notesButton != null)
+        {
+            notesButton.onClick.RemoveAllListeners();
+            notesButton.onClick.AddListener(gameManager.ToggleNotesMode);
+            notesButton.interactable = true;
+        }
+
+        if (undoButton != null)
+        {
+            undoButton.onClick.RemoveAllListeners();
+            undoButton.onClick.AddListener(gameManager.Undo);
+        }
+
+        if (eraseButton != null)
+        {
+            eraseButton.onClick.RemoveAllListeners();
+            eraseButton.onClick.AddListener(gameManager.Erase);
+        }
+    }
+
+    public void UpdateActionButtonStates(bool canUndo, bool canErase)
+    {
+        SetButtonState(undoButton, undoIcon, canUndo);
+        SetButtonState(eraseButton, eraseIcon, canErase);
+    }
+
+    private void SetButtonState(Button button, Image icon, bool isActive)
+    {
+        if (button == null) return;
+
+        button.interactable = isActive;
+        Color color = isActive ? activeButtonColor : inactiveButtonColor;
+
+        if (button.targetGraphic != null) button.targetGraphic.color = color;
+        if (icon != null) icon.color = color;
+    }
+
+    public void SetNotesMode(bool isNotesMode)
+    {
+        if (penBackground != null) penBackground.color = isNotesMode ? unselectedModeColor : selectedModeColor;
+        if (notesBackground != null) notesBackground.color = isNotesMode ? selectedModeColor : unselectedModeColor;
+        if (penLabel != null) penLabel.color = isNotesMode ? unselectedModeLabelColor : Color.white;
+        if (notesLabel != null) notesLabel.color = isNotesMode ? Color.white : unselectedModeLabelColor;
+    }
+
+    public void UpdateHintBadge(int remainingHints)
+    {
+        this.remainingHints = remainingHints;
+        UpdateHintButtonState();
+
+        if (hintCountText != null)
+        {
+            hintCountText.text = remainingHints.ToString();
+            hintCountText.gameObject.SetActive(true);
+        }
+    }
+
+    public void ResetHintCooldown()
+    {
+        hintCooldownRemaining = HintCooldownDuration;
+        UpdateHintTimerVisuals();
         UpdateHintButtonState();
     }
 
-    if (notesButton != null)
+    public void StartHintCooldown()
     {
-        notesButton.onClick.RemoveAllListeners();
-        notesButton.onClick.AddListener(gameManager.ToggleNotesMode);
-        notesButton.interactable = true;
-    }
-
-    if (undoButton != null)
-    {
-        undoButton.onClick.RemoveAllListeners();
-        undoButton.onClick.AddListener(gameManager.Undo);
-    }
-
-    if (eraseButton != null)
-    {
-        eraseButton.onClick.RemoveAllListeners();
-        eraseButton.onClick.AddListener(gameManager.Erase);
-    }
-}
-
-public void UpdateActionButtonStates(bool canUndo, bool canErase)
-{
-    SetButtonState(undoButton, undoIcon, canUndo);
-    SetButtonState(eraseButton, eraseIcon, canErase);
-}
-
-private void SetButtonState(Button button, Image icon, bool isActive)
-{
-    if (button == null) return;
-
-    button.interactable = isActive;
-    Color color = isActive ? activeButtonColor : inactiveButtonColor;
-
-    if (button.targetGraphic != null) button.targetGraphic.color = color;
-    if (icon != null) icon.color = color;
-}
-
-public void SetNotesMode(bool isNotesMode)
-{
-    if (penBackground != null) penBackground.color = isNotesMode ? unselectedModeColor : selectedModeColor;
-    if (notesBackground != null) notesBackground.color = isNotesMode ? selectedModeColor : unselectedModeColor;
-    if (penLabel != null) penLabel.color = isNotesMode ? unselectedModeLabelColor : Color.white;
-    if (notesLabel != null) notesLabel.color = isNotesMode ? Color.white : unselectedModeLabelColor;
-}
-
-public void UpdateHintBadge(int remainingHints)
-{
-    this.remainingHints = remainingHints;
-    UpdateHintButtonState();
-
-    if (hintCountText != null)
-    {
-        hintCountText.text = remainingHints.ToString();
-        hintCountText.gameObject.SetActive(true);
-    }
-}
-
-public void ResetHintCooldown()
-{
         hintCooldownRemaining = HintCooldownDuration;
-    UpdateHintTimerVisuals();
-    UpdateHintButtonState();
-}
+        UpdateHintTimerVisuals();
+        UpdateHintButtonState();
+    }
 
-public void StartHintCooldown()
-{
-    hintCooldownRemaining = HintCooldownDuration;
-    UpdateHintTimerVisuals();
-    UpdateHintButtonState();
-}
+    private void HandleHintRequest()
+    {
+        if (gameManager == null || !CanRequestHint) return;
+        gameManager.Hint();
+    }
 
-private void HandleHintRequest()
-{
-    if (gameManager == null || !CanRequestHint) return;
-    gameManager.Hint();
-}
+    private void UpdateHintTimerVisuals()
+    {
+        float progress = hintCooldownRemaining / HintCooldownDuration;
+        if (hintTimerLight != null) hintTimerLight.fillAmount = progress;
+        if (hintTimerDark != null) hintTimerDark.fillAmount = 1f;
+        if (hintTimerText != null) hintTimerText.text = $"00:{Mathf.CeilToInt(hintCooldownRemaining):00}";
+    }
 
-private void UpdateHintTimerVisuals()
-{
-    float progress = hintCooldownRemaining / HintCooldownDuration;
-    if (hintTimerLight != null) hintTimerLight.fillAmount = progress;
-    if (hintTimerDark != null) hintTimerDark.fillAmount = 1f;
-    if (hintTimerText != null) hintTimerText.text = $"00:{Mathf.CeilToInt(hintCooldownRemaining):00}";
-}
-
-private void UpdateHintButtonState()
-{
+    private void UpdateHintButtonState()
+    {
         if (hintButton == null) return;
 
         bool canRequestHint = CanRequestHint;
@@ -204,5 +204,5 @@ private void UpdateHintButtonState()
         Color buttonColor = canRequestHint ? hintButton.colors.normalColor : inactiveButtonColor;
         if (hintButton.targetGraphic != null) hintButton.targetGraphic.color = buttonColor;
         if (hintIcon != null) hintIcon.color = canRequestHint ? activeButtonColor : inactiveButtonColor;
-}
+    }
 }

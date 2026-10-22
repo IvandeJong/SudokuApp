@@ -11,7 +11,6 @@ public class SudokuWinPanel : MonoBehaviour
     [SerializeField] private TextMeshProUGUI totalTimeText;
     [SerializeField] private TextMeshProUGUI mistakesText;
     [SerializeField] private GameObject nextLevelButton;
-    [SerializeField] private GameObject mainMenuButton;
     [SerializeField] private GameObject starsContainer;
     [SerializeField] private GameObject[] starIcons; // 3 stars
 
@@ -65,8 +64,8 @@ public class SudokuWinPanel : MonoBehaviour
             panelRoot = gameObject;
         }
 
-        string mode = PlayerPrefs.GetString("SudokuGameMode", "");
-        bool isCampaign = mode == "Campaign";
+        string mode = PlayerPrefs.GetString(PlayerPrefsKey.SudokuGameMode.ToString(), "");
+        bool isCampaign = mode == GameModes.Campaign;
 
         if (nextLevelButton != null)
         {
@@ -91,7 +90,7 @@ public class SudokuWinPanel : MonoBehaviour
 
         if (isCampaign)
         {
-            int levelIndex = PlayerPrefs.GetInt("CampaignLevelIndex", 0);
+            int levelIndex = PlayerPrefs.GetInt(PlayerPrefsKey.CampaignLevelIndex.ToString(), 0);
             CampaignManager.Instance.SaveLevelResult(levelIndex, totalSeconds, mistakes);
 
             var progress = CampaignManager.Instance.GetProgress(levelIndex);
@@ -124,33 +123,33 @@ public class SudokuWinPanel : MonoBehaviour
 
     public void StartNextCampaignLevel()
     {
-        int nextIndex = PlayerPrefs.GetInt("CampaignLevelIndex", 0) + 1;
+        int nextIndex = PlayerPrefs.GetInt(PlayerPrefsKey.CampaignLevelIndex.ToString(), 0) + 1;
         if (!CampaignManager.Instance.IsLevelUnlocked(nextIndex))
         {
-            SceneManager.LoadScene("MainMenu");
+            SceneManager.LoadScene(SceneNames.MainMenu);
             return;
         }
 
         CampaignManager.CampaignLevel nextLevel = CampaignManager.Instance.GetLevel(nextIndex);
         if (nextLevel == null)
         {
-            SceneManager.LoadScene("MainMenu");
+            SceneManager.LoadScene(SceneNames.MainMenu);
             return;
         }
 
-        PlayerPrefs.SetInt("CampaignLevelIndex", nextIndex);
-        PlayerPrefs.SetString(MainMenuController.DifficultyKey, nextLevel.difficulty);
+        PlayerPrefs.SetInt(PlayerPrefsKey.CampaignLevelIndex.ToString(), nextIndex);
+        PlayerPrefs.SetString(PlayerPrefsKey.CurrentDifficulty.ToString(), nextLevel.difficulty.ToString());
         PlayerPrefs.Save();
 
-        string sceneName = "SudokuClassic";
-        if (nextLevel.gridSize == "Nano") sceneName = "SudokuNano";
-        else if (nextLevel.gridSize == "Mini") sceneName = "SudokuMini";
+        string sceneName = SceneNames.SudokuClassic;
+        if (nextLevel.levelType == CampaignLevelType.Nano) sceneName = SceneNames.SudokuNano;
+        else if (nextLevel.levelType == CampaignLevelType.Mini) sceneName = SceneNames.SudokuMini;
 
         SceneManager.LoadScene(sceneName);
     }
 
     public void OpenMainMenu()
     {
-        SceneManager.LoadScene("MainMenu");
+        SceneManager.LoadScene(SceneNames.MainMenu);
     }
 }
